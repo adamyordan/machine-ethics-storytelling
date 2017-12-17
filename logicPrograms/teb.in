@@ -1,0 +1,7 @@
+abd(terrorBombing/0).
+intv(killCivilian/0).
+
+endWar <- terrorEnemy.
+terrorEnemy <- killCivilian.
+killCivilian <- bombCivilian.
+bombCivilian <- terrorBombing.

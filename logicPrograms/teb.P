@@ -1,0 +1,276 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- consult(runner).
+
+:- dynamic rule_r/5 as incremental.
+:- dynamic not_rule_r/5 as incremental.
+:- dynamic make_not/4 as incremental.
+:- dynamic not_make_not/4 as incremental.
+:- dynamic make/4 as incremental.
+:- dynamic not_make/4 as incremental.
+:- dynamic killCivilian/3 as incremental.
+:- dynamic not_killCivilian/3 as incremental.
+:- dynamic endWar/3 as incremental.
+:- dynamic not_endWar/3 as incremental.
+:- dynamic terrorEnemy/3 as incremental.
+:- dynamic not_terrorEnemy/3 as incremental.
+:- dynamic bombCivilian/3 as incremental.
+:- dynamic not_bombCivilian/3 as incremental.
+:- dynamic terrorBombing/3 as incremental.
+:- dynamic not_terrorBombing/3 as incremental.
+
+:- table killCivilian_ab/2 as incremental.
+:- table endWar_ab/2 as incremental.
+:- table terrorEnemy_ab/2 as incremental.
+:- table bombCivilian_ab/2 as incremental.
+
+initProgram :-
+    markingAbducibles,
+    markingCompls,
+    markingTimeOfInterest.
+
+markingAbducibles :-
+    markAbducible(terrorBombing / 0),
+    true.
+
+markingCompls :-
+    markCompl(terrorBombing, not_terrorBombing),
+    markCompl(killCivilian, not_killCivilian),
+    markCompl(make(X_1), not_make(X_1)),
+    markCompl(endWar, not_endWar),
+    markCompl(terrorEnemy, not_terrorEnemy),
+    markCompl(bombCivilian, not_bombCivilian),
+    markCompl(make_not(X_1), not_make_not(X_1)),
+    markCompl(false, not_false),
+    markCompl(rule_r(killCivilian, [make(killCivilian)]), not_rule_r(killCivilian, [make(killCivilian)])),
+    markCompl(rule_r(endWar, [terrorEnemy]), not_rule_r(endWar, [terrorEnemy])),
+    markCompl(rule_r(terrorEnemy, [killCivilian]), not_rule_r(terrorEnemy, [killCivilian])),
+    markCompl(rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), not_rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)])),
+    markCompl(rule_r(bombCivilian, [terrorBombing]), not_rule_r(bombCivilian, [terrorBombing])),
+    true.
+
+markingTimeOfInterest :-
+    markTimeOfInterest(killCivilian, 0),
+    markTimeOfInterest(killCivilian, 1),
+    markTimeOfInterest(make, 0),
+    markTimeOfInterest(make, 1),
+    markTimeOfInterest(endWar, 0),
+    markTimeOfInterest(endWar, 1),
+    markTimeOfInterest(terrorEnemy, 0),
+    markTimeOfInterest(terrorEnemy, 1),
+    markTimeOfInterest(bombCivilian, 0),
+    markTimeOfInterest(bombCivilian, 1),
+    markTimeOfInterest(make_not, 0),
+    markTimeOfInterest(make_not, 1),
+    markTimeOfInterest(false, 0),
+    markTimeOfInterest(false, 1),
+    true.
+
+query([], I, O, [], Qt) :-
+    !,
+    holds(not_false, I, O, _, Qt).
+
+query([not F | Fs], I, O, [NotF : T_NotF | Ts], Qt) :-
+    !,
+    compl(F, NotF),
+    holds(NotF, I, E, T_NotF, Qt),
+    query(Fs, E, O, Ts, Qt).
+
+query([F | Fs], I, O, [F : T_F | Ts], Qt) :-
+    !,
+    holds(F, I, E, T_F, Qt),
+    query(Fs, E, O, Ts, Qt).
+
+query(not F, I, O, T_F, Qt) :-
+    !,
+    compl(F, NotF),
+    holds(NotF, I, E, T_F, Qt),
+    holds(not_false, E, O, _, Qt).
+
+query(F, I, O, T_F, Qt) :-
+    holds(F, I, E, T_F, Qt),
+    holds(not_false, E, O, _, Qt).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Initial Transformation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+rule_r(killCivilian, [make(killCivilian)], I, I, 1).
+not_rule_r(killCivilian, [make(killCivilian)], I, I, 0).
+rule_r(endWar, [terrorEnemy], I, I, 1).
+not_rule_r(endWar, [terrorEnemy], I, I, 0).
+rule_r(terrorEnemy, [killCivilian], I, I, 1).
+not_rule_r(terrorEnemy, [killCivilian], I, I, 0).
+rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)], I, I, 1).
+not_rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)], I, I, 0).
+rule_r(bombCivilian, [terrorBombing], I, I, 1).
+not_rule_r(bombCivilian, [terrorBombing], I, I, 0).
+false(I, I, 0).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Apostrophe
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+killCivilian_ab(E_2, T) :-
+    active(rule_r(killCivilian, [make(killCivilian)]), T_rule),
+    E_1 = [],
+    make(killCivilian, E_1, E_2, T_make),
+    latest([(rule_r(killCivilian, [make(killCivilian)]), [], E_1, T_rule), (make(killCivilian), E_1, E_2, T_make)], T).
+
+endWar_ab(E_2, T) :-
+    active(rule_r(endWar, [terrorEnemy]), T_rule),
+    E_1 = [],
+    terrorEnemy(E_1, E_2, T_terrorEnemy),
+    latest([(rule_r(endWar, [terrorEnemy]), [], E_1, T_rule), (terrorEnemy, E_1, E_2, T_terrorEnemy)], T).
+
+terrorEnemy_ab(E_2, T) :-
+    active(rule_r(terrorEnemy, [killCivilian]), T_rule),
+    E_1 = [],
+    killCivilian(E_1, E_2, T_killCivilian),
+    latest([(rule_r(terrorEnemy, [killCivilian]), [], E_1, T_rule), (killCivilian, E_1, E_2, T_killCivilian)], T).
+
+killCivilian_ab(E_3, T) :-
+    active(rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), T_rule),
+    E_1 = [],
+    bombCivilian(E_1, E_2, T_bombCivilian),
+    not_make_not(killCivilian, E_2, E_3, T_not_make_not),
+    latest([(rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), [], E_1, T_rule), (bombCivilian, E_1, E_2, T_bombCivilian), (not_make_not(killCivilian), E_2, E_3, T_not_make_not)], T).
+
+bombCivilian_ab(E_2, T) :-
+    active(rule_r(bombCivilian, [terrorBombing]), T_rule),
+    E_1 = [],
+    terrorBombing(E_1, E_2, T_terrorBombing),
+    latest([(rule_r(bombCivilian, [terrorBombing]), [], E_1, T_rule), (terrorBombing, E_1, E_2, T_terrorBombing)], T).
+
+make_ab(_h936, E_1, T) :-
+    fail.
+
+make_not_ab(_h936, E_1, T) :-
+    fail.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Plus
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+killCivilian(I, O, T) :- killCivilian_ab(E, T), produce_context(O, I, E).
+endWar(I, O, T) :- endWar_ab(E, T), produce_context(O, I, E).
+terrorEnemy(I, O, T) :- terrorEnemy_ab(E, T), produce_context(O, I, E).
+bombCivilian(I, O, T) :- bombCivilian_ab(E, T), produce_context(O, I, E).
+make(X_1, I, O, T) :- make_ab(X_1, E, T), produce_context(O, I, E).
+make_not(X_1, I, O, T) :- make_not_ab(X_1, E, T), produce_context(O, I, E).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Minus & Asterisk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% not_killCivilian
+
+not_killCivilian(E_0, E_2, T) :-
+    killCivilian_star_1(E_0, E_1, D_1),
+    killCivilian_star_2(E_1, E_2, D_2),
+    joiningLists([D_1, D_2], D),
+    latest(D, T).
+
+killCivilian_star_1(I, O, [(not_rule_r(killCivilian, [make(killCivilian)]), I, O, T)]) :-
+    not_rule_r(killCivilian, [make(killCivilian)], I, O, T),
+    T > 0.
+killCivilian_star_1(I, O, D) :-
+    D = [(rule_r(killCivilian, [make(killCivilian)]), I, E_0, T_rule_r), (not_make(killCivilian), E_0, O, T_not_make)],
+    rule_r(killCivilian, [make(killCivilian)], I, E_0, T_rule_r),
+    not_make(killCivilian, E_0, O, T_not_make).
+
+killCivilian_star_2(I, O, [(not_rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), I, O, T)]) :-
+    not_rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)], I, O, T),
+    T > 0.
+killCivilian_star_2(I, O, D) :-
+    D = [(rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), I, E_0, T_rule_r), (not_bombCivilian, E_0, O, T_not_bombCivilian)],
+    rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)], I, E_0, T_rule_r),
+    not_bombCivilian(E_0, O, T_not_bombCivilian).
+killCivilian_star_2(I, O, D) :-
+    D = [(rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)]), I, E_0, T_rule_r), (bombCivilian, E_0, E_1, T_bombCivilian), (make_not(killCivilian), E_1, O, T_make_not)],
+    rule_r(killCivilian, [bombCivilian,not make_not(killCivilian)], I, E_0, T_rule_r),
+    bombCivilian(E_0, E_1, T_bombCivilian),
+    make_not(killCivilian, E_1, O, T_make_not).
+
+%%% not_make
+
+make(X_1, I, I, 0).
+not_make(X_1, I, I, 1).
+
+%%% not_endWar
+
+not_endWar(E_0, E_1, T) :-
+    endWar_star_1(E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+endWar_star_1(I, O, [(not_rule_r(endWar, [terrorEnemy]), I, O, T)]) :-
+    not_rule_r(endWar, [terrorEnemy], I, O, T),
+    T > 0.
+endWar_star_1(I, O, D) :-
+    D = [(rule_r(endWar, [terrorEnemy]), I, E_0, T_rule_r), (not_terrorEnemy, E_0, O, T_not_terrorEnemy)],
+    rule_r(endWar, [terrorEnemy], I, E_0, T_rule_r),
+    not_terrorEnemy(E_0, O, T_not_terrorEnemy).
+
+%%% not_terrorEnemy
+
+not_terrorEnemy(E_0, E_1, T) :-
+    terrorEnemy_star_1(E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+terrorEnemy_star_1(I, O, [(not_rule_r(terrorEnemy, [killCivilian]), I, O, T)]) :-
+    not_rule_r(terrorEnemy, [killCivilian], I, O, T),
+    T > 0.
+terrorEnemy_star_1(I, O, D) :-
+    D = [(rule_r(terrorEnemy, [killCivilian]), I, E_0, T_rule_r), (not_killCivilian, E_0, O, T_not_killCivilian)],
+    rule_r(terrorEnemy, [killCivilian], I, E_0, T_rule_r),
+    not_killCivilian(E_0, O, T_not_killCivilian).
+
+%%% not_bombCivilian
+
+not_bombCivilian(E_0, E_1, T) :-
+    bombCivilian_star_1(E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+bombCivilian_star_1(I, O, [(not_rule_r(bombCivilian, [terrorBombing]), I, O, T)]) :-
+    not_rule_r(bombCivilian, [terrorBombing], I, O, T),
+    T > 0.
+bombCivilian_star_1(I, O, D) :-
+    D = [(rule_r(bombCivilian, [terrorBombing]), I, E_0, T_rule_r), (not_terrorBombing, E_0, O, T_not_terrorBombing)],
+    rule_r(bombCivilian, [terrorBombing], I, E_0, T_rule_r),
+    not_terrorBombing(E_0, O, T_not_terrorBombing).
+
+%%% not_make_not
+
+make_not(X_1, I, I, 0).
+not_make_not(X_1, I, I, 1).
+
+%%% not_false
+
+false(I, I, 0).
+not_false(I, I, 1).
+
+%%% not_make
+
+make(X_1, I, I, 0).
+not_make(X_1, I, I, 1).
+
+%%% not_make_not
+
+make_not(X_1, I, I, 0).
+not_make_not(X_1, I, I, 1).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : O
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+terrorBombing(I, O, T) :- insert_abducible(terrorBombing, I, O, T).
+not_terrorBombing(I, O, T) :- insert_abducible(not terrorBombing, I, O, T).
+

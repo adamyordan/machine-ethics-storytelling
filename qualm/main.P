@@ -1,0 +1,149 @@
+:- import append/3, length/2 from basics.
+:- import incr_assert/1 from increval.
+:- consult(transformer).
+
+:- dynamic currentTime/1.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Constructor : Operators Definition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- op(900,   fy, not).
+:- op(1100, xfy, <- ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Constructor : File Configuration
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+construct(Filename) :-
+    readFile(Filename),
+    writeFile(Filename),
+    loadClauses,
+    seen,
+    told.
+
+readFile(Filename) :-
+    append(Filename, ".in", FExt),
+    name(F, FExt),
+    see(F).
+    
+writeFile(Filename) :-
+    append(Filename, ".P", FExt),
+    name(F, FExt),
+    tell(F).
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Constructor : I/O Processing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+loadClauses :-
+    read(C),
+    (C = end_of_file -> (postProcessingClause, transform, nl)
+                      ; (processClause(C), loadClauses)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wrapper : Initialization & Hels
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+initFile(Filename) :-
+    consult(Filename),
+    initProgram,
+    retractall(currentTime(_)),
+    assert(currentTime(1)).
+
+incrCurrentTime :-
+    currentTime(Ct),
+    CtPlusOne is Ct + 1,
+    retractall(currentTime(_)),
+    assert(currentTime(CtPlusOne)).
+
+help :-
+    write('Construct : construct("filename")'), nl,
+    write('Init File : initFile(''filename'')'), nl,
+    write('Query : findAbds()'), nl,
+    write('Update : activateRule(), deactivateRule()'), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wrapper : Query
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+f(G, O) :- findAbds(G, O).
+f(G, O, T) :- findAbds(G, [], O, T).
+
+
+findAbds(G, O) :-
+    currentTime(Ct),
+    query(G, [], O, _, Ct),
+    incrCurrentTime.
+
+findAbds(G, I, O) :-
+    currentTime(Ct),
+    query(G, I, O, _, Ct),
+    incrCurrentTime.
+
+% findAbds(G, I, O, T_G) :-
+%     currentTime(Ct),
+%     query(G, I, O, T_G, Ct),
+%     T_G =< Ct,
+%     incrCurrentTime.
+
+% findAbds(G, I, O, T_G, Qt) :-
+%     query(G, I, O, T_G, Qt),
+%     T_G =< Qt.
+
+findAbds(G, I, O, Qt) :-
+    query(G, I, O, _, Qt).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wrapper : Update
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+activateRule(H, B, T) :-
+    incr_assert(rule_r(H, B, I, I, T)),
+    H =.. [Pred | _],
+    markTimeOfInterest(Pred, T).
+
+deactivateRule(H, B, T) :-
+    incr_assert(not_rule_r(H, B, I, I, T)),
+    H =.. [Pred | _],
+    markTimeOfInterest(Pred, T).
+
+activate(F, T) :-
+    F =.. [Pred | Args],
+    length(Args, Arity),
+    isAbducible(Pred / Arity, _),
+    !,
+    unmarkAbducible(Pred / Arity, T),
+    assert(pending(F, T)),
+    incr_assert(actab(Pred / Arity, T)).
+activate(F, T) :-
+    assert(pending(F, T)).
+
+deactivate(F, T) :-
+    F =.. [Pred | Args],
+    length(Args, Arity),
+    isAbducible(Pred / Arity, _),
+    !,
+    unmarkAbducible(Pred / Arity, T),
+    compl(F, NotF),
+    assert(pending(NotF, T)).
+deactivate(F, T) :-
+    compl(F, NotF),
+    assert(pending(NotF, T)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Misc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eval(Goal) :-
+    currentTime(Ct),
+    eval(Goal, Ct).
+eval(Goal, Qt) :-
+    query(Goal, [], [], _, Qt).
+eval(Goal, E, Qt) :-
+    query(Goal, [], E, _, Qt).
+
+assignFalse(Abd, T) :-
+    deactivate(Abd, T).
+
+assignTrue(Abd, T) :-
+    activate(Abd, T).

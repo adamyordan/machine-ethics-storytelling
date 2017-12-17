@@ -1,0 +1,634 @@
+:- import append/3, length/2 from basics.
+:- import tupleToList/2 from helper.
+:- consult(database).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Clause Processing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- dynamic rawInput/0.
+:- dynamic rawInputHeaderDone/0.
+
+processClause(beginProlog) :-
+    assert(rawInput).
+
+processClause(endProlog) :-
+    retract(rawInput).
+
+processClause(Rule) :-
+    rawInput,
+    writeRawInputHeader,
+    write(Rule), write('.'), nl.
+
+processClause(abds(ListOfAbds)) :-
+    markAbducibles(ListOfAbds).
+
+processClause(abd(Abd)) :-
+    markAbducible(Abd).
+
+processClause(intvs(ListOfAbds)) :-
+    markInterventions(ListOfAbds).
+
+processClause(intv(Intv)) :-
+    markIntervention(Intv).
+
+processClause((H <- B)) :-
+    tupleToList(B, Bs),
+    markRule(H, Bs).
+    
+processClause(H) :-
+    markRule(H, []).
+
+postProcessingClause :-
+    markPredicate(false),
+    finalizeCounterfactualRules.
+
+finalizeCounterfactualRules :-
+    isIntervention(Intv / Arity),
+    addCounterfactualRulesTransformIfNeeded(Intv / Arity),
+    fail.
+finalizeCounterfactualRules.    
+
+addCounterfactualRulesTransformIfNeeded(Intv / _) :-
+    findall([Intv, Body], call(ruleDatabase, Intv, Body), Rules),
+    length(Rules, 1),
+    markRuleHelper(Intv, [not make_not(Intv)]).
+addCounterfactualRulesTransformIfNeeded(_).
+
+writeRawInputHeader :-
+    rawInputHeaderDone.
+writeRawInputHeader :-
+    assert(rawInputHeaderDone),
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Raw Input'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+transform :-
+    header,
+    initialTransformation,
+    apostropheTransformation,
+    plusTransformation,
+    minusAsteriskTransformation,
+    oTransformation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+header :-
+    headerHeader,
+    writeImport,
+    writeDynamic,
+    writeTabledHeadPredicates,
+    writeInit,
+    writeAbducibles,
+    writeCompls,
+    writeTimeOfInterest,
+    writeQueries.
+
+headerHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Header'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+    
+writeImport :-
+    write(':- consult(runner).'), nl,
+    nl.
+
+writeDynamic :-
+    write(':- dynamic rule_r/5 as incremental.'), nl,
+    write(':- dynamic not_rule_r/5 as incremental.'), nl,
+    write(':- dynamic make_not/4 as incremental.'), nl,
+    write(':- dynamic not_make_not/4 as incremental.'), nl,
+    write(':- dynamic make/4 as incremental.'), nl,
+    write(':- dynamic not_make/4 as incremental.'), nl,
+    fail.
+writeDynamic :-
+    predicateInHeadDatabase(P/Arity),
+    P \= false,
+    writeDynamicHelper(P, Arity),
+    fail.
+writeDynamic :-
+    isAbducible(P/Arity, _),
+    writeDynamicHelper(P, Arity),
+    fail.
+writeDynamic :-
+    nl.
+
+writeDynamicHelper(P, Arity) :-
+    ArityPlusThree is Arity + 3,
+    write(':- dynamic '), write(P), write('/'), write(ArityPlusThree), write(' as incremental.'), nl,
+    write(':- dynamic not_'), write(P), write('/'), write(ArityPlusThree), write(' as incremental.'), nl.
+
+writeTabledHeadPredicates :-
+    predicateInHeadDatabase(P/Arity),
+    P \= false,
+    ArityPlusTwo is Arity + 2,
+    write(':- table '), write(P), write('_ab/'), write(ArityPlusTwo), write(' as incremental.'), nl,
+    fail.
+writeTabledHeadPredicates :-
+    nl.
+    
+writeInit :-
+    write('initProgram :-'), nl,
+    write('    markingAbducibles,'), nl,
+    write('    markingCompls,'), nl,
+    write('    markingTimeOfInterest.'), nl,
+    nl.
+    
+writeAbducibles :-
+    write('markingAbducibles :-'), nl,
+    writeAbduciblesHelper.
+    
+writeAbduciblesHelper :-
+    isAbducible(Abd, _),
+    write('    markAbducible('), write(Abd), write('),'), nl,
+    fail.
+writeAbduciblesHelper :-
+    write('    true.'), nl,
+    nl.
+
+writeCompls :-
+    write('markingCompls :-'), nl,
+    writeComplsHelper.
+    
+writeComplsHelper :-
+    isAbducible(Abd/Arity, _),
+    write('    markCompl('), write(Abd), writeX(Arity), write(', not_'), write(Abd), writeX(Arity), write('),'), nl,
+    fail.
+writeComplsHelper :-
+    predicateDatabase(P/Arity),
+    write('    markCompl('), write(P), writeX(Arity), write(', not_'), write(P), writeX(Arity), write('),'), nl,
+    fail.
+writeComplsHelper :-
+    ruleDatabase(H, B),
+    write('    markCompl(rule_r('), write(H), write(', '), write(B), write('), not_rule_r('), write(H), write(', '), write(B), write(')),'), nl,
+    fail.
+writeComplsHelper :-
+    write('    true.'), nl,
+    nl.
+
+writeTimeOfInterest :-
+    write('markingTimeOfInterest :-'), nl,
+    writeTimeOfInterestHelper.
+
+writeTimeOfInterestHelper :-
+    predicateDatabase(P/_),
+    write('    markTimeOfInterest('), write(P), write(', 0),'), nl,
+    write('    markTimeOfInterest('), write(P), write(', 1),'), nl,
+    fail.
+writeTimeOfInterestHelper :-
+    write('    true.'), nl,
+    nl.
+
+writeQueries :-
+    write('query([], I, O, [], Qt) :-'), nl,
+    write('    !,'), nl,
+    write('    holds(not_false, I, O, _, Qt).'), nl,
+    nl,
+    write('query([not F | Fs], I, O, [NotF : T_NotF | Ts], Qt) :-'), nl,
+    write('    !,'), nl,
+    write('    compl(F, NotF),'), nl,
+    write('    holds(NotF, I, E, T_NotF, Qt),'), nl,
+    write('    query(Fs, E, O, Ts, Qt).'), nl,
+    nl,
+    write('query([F | Fs], I, O, [F : T_F | Ts], Qt) :-'), nl,
+    write('    !,'), nl,
+    write('    holds(F, I, E, T_F, Qt),'), nl,
+    write('    query(Fs, E, O, Ts, Qt).'), nl,
+    nl,
+    write('query(not F, I, O, T_F, Qt) :-'), nl,
+    write('    !,'), nl,
+    write('    compl(F, NotF),'), nl,
+    write('    holds(NotF, I, E, T_F, Qt),'), nl,
+    write('    holds(not_false, E, O, _, Qt).'), nl,
+    nl,
+    write('query(F, I, O, T_F, Qt) :-'), nl,
+    write('    holds(F, I, E, T_F, Qt),'), nl,
+    write('    holds(not_false, E, O, _, Qt).'), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Helper
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+writeTerms([]) :- !.
+writeTerms(Terms) :- write('('), writeTerms2(Terms), write(')').
+writeTerms(Terms, withcomma) :- writeTerms2(Terms, withcomma).
+
+writeTerms2(Terms) :-
+    writeTermsHelper2(Terms).
+writeTerms2(Terms, withcomma) :-
+    writeTermsHelper2(Terms, withcomma).
+
+writeTermsHelper2([]).
+writeTermsHelper2([Term]) :-
+    write(Term), !.
+writeTermsHelper2([Term | Terms]) :-
+    write(Term), write(', '),
+    writeTerms2(Terms).
+
+writeTermsHelper2([], withcomma).
+writeTermsHelper2([Term], withcomma) :-
+    write(Term), write(', '), !.
+writeTermsHelper2([Term | Terms], withcomma) :-
+    write(Term), write(', '),
+    writeTerms2(Terms, withcomma).
+
+writeX(0) :- !.
+writeX(Num) :- write('('), writeX2(Num), write(')').
+writeX(Num, withcomma) :- writeX2(Num, withcomma).
+
+writeXY(0) :- !.
+writeXY(NumX, NumY) :- write('('), writeXY2(NumX, NumY), write(')').
+writeXY(Num, NumY, withcomma) :- writeXY2(Num, NumY, withcomma).
+
+writeX2(0) :- !.
+writeX2(0, withcomma) :- !.
+writeX2(1) :- write('X_1'), !.
+writeX2(1, withcomma) :- write('X_1, '), !.
+
+writeXY2(0, _) :- !.
+writeXY2(0, _, withcomma) :- !.
+writeXY2(1, NumY) :- write('X_1_'), write(NumY), !.
+writeXY2(1, NumY, withcomma) :- write('X_1_'), write(NumY), write(', '), !.
+
+writeX2(Num) :-
+    write('X_'), write(Num), write(', '),
+    NumMinusOne is Num - 1,
+    writeX2(NumMinusOne).
+
+writeX2(Num, withcomma) :-
+    write('X_'), write(Num), write(', '),
+    NumMinusOne is Num - 1,
+    writeX2(NumMinusOne, withcomma).
+
+writeXY2(NumX, NumY) :-
+    write('X_'), write(NumX), write('_'), write(NumY), write(', '),
+    NumXMinusOne is NumX - 1,
+    writeXY2(NumXMinusOne, NumY).
+
+writeXY2(NumX, NumY, withcomma) :-
+    write('X_'), write(NumX), write('_'), write(NumY), write(', '),
+    NumXMinusOne is NumX - 1,
+    writeXY2(NumXMinusOne, NumY, withcomma).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Initial Transformation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+initialTransformation :-
+    initialTransformationHeader,
+    ruleDatabase(H, B),
+    activateRule(H, B),
+    fail.
+initialTransformation :-
+    write('false(I, I, 0).'), nl.
+
+initialTransformationHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Transformation : Initial Transformation'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+activateRule(H, []) :-
+    H =.. [Pred | Terms],
+    write(Pred), write('('), writeTerms(Terms, withcomma), write('I, I, 1).'), nl,
+    write('not_'), write(Pred), write('('), writeTerms(Terms, withcomma), write('I, I, 0).'), nl.
+activateRule(H, B) :-
+    B \= [],
+    write('rule_r('), write(H), write(', '), write(B), write(', I, I, 1).'), nl,
+    write('not_rule_r('), write(H), write(', '), write(B), write(', I, I, 0).'), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Apostrophe
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+apostropheTransformation :-
+    apostropheTransformationHeader,
+    ruleDatabase(H, B),
+    apostropheTransformationHelper(H, B),
+    fail.
+apostropheTransformation :-
+    apostropheTransformationHelper(make(X1), []),
+    fail.
+apostropheTransformation :-
+    apostropheTransformationHelper(make_not(X1), []),
+    fail.
+apostropheTransformation.
+
+apostropheTransformationHelper(H, B) :-
+    H \= false,
+    % B \= [],
+    writeApostropheHead(H, B),
+    writeApostropheRule(H, B),
+    writeApostropheRuleBody(H, B),
+    writeApostropheLatest(H, B).
+
+apostropheTransformationHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Transformation : Apostrophe'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+writeApostropheHead(H, B) :-
+    length(B, Len),
+    LenPlusOne is Len + 1,
+    H =.. [Pred | Terms],
+    write(Pred), write('_ab('), writeTerms(Terms, withcomma), write('E_'), write(LenPlusOne), write(', T) :-'), nl.
+    
+writeApostropheRule(_, []) :-
+    write('    fail.'), nl, nl.
+    % H =.. [Pred | Terms],
+    % write('    '), write(Pred), write('('), writeTerms(Terms, withcomma), write('[], E_1, T_rule),'), nl.
+writeApostropheRule(H, B) :-
+    B \= [],
+    write('    active('), write('rule_r('), write(H), write(', '), write(B), write('), T_rule),'), nl,
+    write('    E_1 = [],'), nl.
+    %write('    '), write('rule_r('), write(H), write(', '), write(B), write(', [], E_1, T_rule),'), nl.
+
+writeApostropheRuleBody(_, B) :-
+    writeApostropheRuleBodyHelper(B, 1).
+    
+writeApostropheRuleBodyHelper([], _).
+writeApostropheRuleBodyHelper([B | Bs], Num) :-
+    NumPlusOne is Num + 1,
+    (
+        B = (not BTemp)
+        -> (
+            BTemp =.. [PredTemp | Terms],
+            write('    not_'), write(PredTemp), write('('), writeTerms(Terms, withcomma), write('E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_not_'), write(PredTemp), write('),'), nl
+        );(
+            B =.. [Pred | Terms],
+            write('    '), write(Pred), write('('), writeTerms(Terms, withcomma), write('E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_'), write(Pred), write('),'), nl
+        )
+    ),
+    writeApostropheRuleBodyHelper(Bs, NumPlusOne).
+
+writeApostropheLatest(_, []).
+writeApostropheLatest(H, B) :-
+    B \= [],
+    write('    latest(['),
+    writeApostropheLatestRule(H, B),
+    writeApostropheLatestBody(H, B, 1),
+    write('], T).'), nl, nl.
+    
+writeApostropheLatestRule(H, []) :-
+    write('('), write(H), write(', [], E_1, T_rule)').
+writeApostropheLatestRule(H, B) :- 
+    B \= [],
+    write('(rule_r('), write(H), write(', '), write(B), write('), [], E_1, T_rule)').
+
+writeApostropheLatestBody(_, [], _).
+writeApostropheLatestBody(_, [B | Bs], Num) :-
+    NumPlusOne is Num + 1,
+    (
+        B = (not BTemp)
+        -> (
+            BTemp =.. [PredTemp | Terms],
+            write(', (not_'), write(PredTemp), writeTerms(Terms), write(', E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_not_'), write(PredTemp), write(')')
+        );(
+            B =.. [Pred | Terms],
+            write(', ('), write(Pred), writeTerms(Terms), write(', E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_'), write(Pred), write(')')
+        )
+    ),
+    writeApostropheLatestBody(_, Bs, NumPlusOne).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Plus
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+plusTransformation :-
+    plusTransformationHeader,
+    predicateInHeadDatabase(P),
+    P \= false/_,
+    writePlus(P),
+    fail.
+plusTransformation :-
+    writePlus(make/1),
+    writePlus(make_not/1),
+    fail.
+plusTransformation.
+
+plusTransformationHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Transformation : Plus'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+writePlus(Pred/Arity) :-
+    write(Pred), write('('), writeX(Arity, withcomma), write('I, O, T) :- '), write(Pred), write('_ab('), writeX(Arity, withcomma), write('E, T), produce_context(O, I, E).'), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Minus & Asterisk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+minusAsteriskTransformation :-
+    minusAsteriskTransformationHeader,
+    predicateDatabase(Pred/Arity),
+    findall(Rule, ruleFinder(Pred, Rule), Rules),
+    writeMinus(Pred/Arity, Rules),
+    fail.
+minusAsteriskTransformation :-
+    writeMinus(make/1, []),
+    fail.
+minusAsteriskTransformation :-
+    writeMinus(make_not/1, []),
+    fail.
+minusAsteriskTransformation.
+
+minusAsteriskTransformationHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Transformation : Minus & Asterisk'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+ruleFinder(Pred, [Head | Body]) :-
+    ruleDatabase(Head, Body),
+    Head =.. [Pred | _].
+
+writeMinus(prolog/1, []) :-
+    !,
+    write('%%% not_prolog'), nl,
+    nl,
+    write('prolog(X, I, I, 0) :- X.'), nl,
+    write('not_prolog(X, I, I, 1) :- \+ X.'), nl,
+    nl.
+writeMinus(Pred/Arity, []) :-
+    write('%%% not_'), write(Pred), nl,
+    nl,
+    write(Pred), write('('), writeX(Arity, withcomma), write('I, I, 0).'), nl,
+    write('not_'), write(Pred), write('('), writeX(Arity, withcomma), write('I, I, 1).'), nl,
+    nl.
+writeMinus(Pred/Arity, Rules) :-
+    Rules \= [],
+    length(Rules, Len),
+    write('%%% not_'), write(Pred), nl,
+    nl,
+    write('not_'), write(Pred), write('('), writeX(Arity, withcomma), write('E_0, E_'), write(Len), write(', T) :-'), nl,
+    writeMinusHelper(Pred/Arity, 0, Len),
+    writeMinusDetail(Pred/Arity, Rules, 1),
+    nl.
+
+writeMinusHelper(_, Len, Len) :-
+    write('    joiningLists(['),
+    writeMinusHelper2(1, Len),
+    write('], D),'), nl,
+    write('    latest(D, T).'), nl.
+writeMinusHelper(Pred/0, Pos, Len) :-
+    Pos \= Len,
+    PosPlusOne is Pos + 1,
+    write('    '), write(Pred), write('_star_'), write(PosPlusOne), write('('), writeX(Arity, withcomma), write('E_'), write(Pos), write(', E_'), write(PosPlusOne), write(', D_'), write(PosPlusOne), write('),'), nl,
+    writeMinusHelper(Pred/Arity, PosPlusOne, Len).
+writeMinusHelper(Pred/Arity, Pos, Len) :-
+    Arity \= 0,
+    Pos \= Len,
+    PosPlusOne is Pos + 1,
+    write('    copy_term('), writeX(Arity), write(', '), writeXY(Arity, Pos), write('), '), write(Pred), write('_star_'), write(PosPlusOne), write('('), writeXY(Arity, Pos, withcomma), write('E_'), write(Pos), write(', E_'), write(PosPlusOne), write(', D_'), write(PosPlusOne), write('),'), nl,
+    writeMinusHelper(Pred/Arity, PosPlusOne, Len).
+
+writeMinusHelper2(Len, Len) :-
+    write('D_'), write(Len).
+writeMinusHelper2(Pos, Len) :-
+    Pos \= Len,
+    PosPlusOne is Pos + 1,
+    write('D_'), write(Pos), write(', '),
+    writeMinusHelper2(PosPlusOne, Len).
+
+writeMinusDetail(_, [], _).
+writeMinusDetail(Pred/Arity, [Rule | Rules], Num) :-
+    nl,
+    writeAsterisk(Pred/Arity, Rule, Num),
+    NumPlusOne is Num + 1,
+    writeMinusDetail(Pred/Arity, Rules, NumPlusOne).
+
+writeAsterisk(Pred/Arity, Rule, Num) :-
+    writeAsteriskArgument(Pred/Arity, Rule, Num),
+    writeAsteriskNot(Pred/Arity, Rule, Num),
+    Rule = [Head | Body],
+    writeAsteriskHelper(Head, Body, [], Body, Num).
+
+writeAsteriskArgument(_/Arity, _, _) :-
+    Arity = 0.
+writeAsteriskArgument(Pred/Arity, [Head], Num) :-
+    Arity \= 0,
+    Head =.. [Pred | Terms],
+    write(Pred), write('_star_'), write(Num), write('('), writeX(Arity, withcomma), write('I, O, [('), write(Head), write(', I, O, T)]) :-'), nl,
+    write('    '), write(Pred), write('('), writeTerms(Terms, withcomma), write('I, O, T),'), nl,
+    write('    ['), writeX(Arity), write('] \= ['), writeTerms(Terms), write('].'), nl.
+writeAsteriskArgument(Pred/Arity, [Head | Body], Num) :-
+    Arity \= 0,
+    Body \= [],
+    Head =.. [Pred | Terms],
+    write(Pred), write('_star_'), write(Num), write('('), writeX(Arity, withcomma), write('I, O, [(rule_r('), write(Head), write(', '), write(Body), write('), I, O, T)]) :-'), nl,
+    write('    rule_r('), write(Head), write(', '), write(Body), write(', I, O, T),'), nl,
+    write('    ['), writeX(Arity), write('] \= ['), writeTerms(Terms), write('].'), nl.
+
+writeAsteriskNot(Pred/_, [Head], Num) :-
+    Head =.. [Pred | Terms],
+    write(Pred), write('_star_'), write(Num), write('('), writeTerms(Terms, withcomma), write('I, O, [(not_'), write(Pred), writeTerms(Terms), write(', I, O, T)]) :-'), nl,
+    write('    fail.'), nl.
+    % write('% '), write('    not_'), write(Pred), write('('), writeTerms(Terms, withcomma), write('I, O, T),'), nl,
+    % write('% '), write('    T > 0.'), nl.
+writeAsteriskNot(Pred/_, [Head | Body], Num) :-
+    Body \= [],
+    Head =.. [Pred | Terms],
+    write(Pred), write('_star_'), write(Num), write('('), writeTerms(Terms, withcomma), write('I, O, [(not_rule_r('), write(Head), write(', '), write(Body), write('), I, O, T)]) :-'), nl,
+    write('    not_rule_r('), write(Head), write(', '), write(Body), write(', I, O, T),'), nl,
+    write('    T > 0.'), nl.
+
+writeAsteriskHelper(_, [], _, _, _).
+writeAsteriskHelper(Head, [not B | Bs], D, OriB, Num) :-
+    !,
+    Head =.. [Pred | Terms],
+    B =.. [PredB | TermsB],
+    length(D, Len),
+    write(Pred), write('_star_'), write(Num), write('('), writeTerms(Terms, withcomma), write('I, O, D) :-'), nl,
+    write('    D = [(rule_r('), write(Head), write(', '), write(OriB), write('), I, E_0, T_rule_r)'),
+    writeAsteriskD(D, 0), write(', ('), write(B), write(', E_'), write(Len), write(', O, T_'), write(PredB), write(')],'), nl,
+    write('    rule_r('), write(Head), write(', '), write(OriB), write(', I, E_0, T_rule_r),'), nl,
+    writeAsteriskHelper2(D, 0),
+    write('    '), write(PredB), write('('), writeTerms(TermsB, withcomma), write('E_'), write(Len), write(', O, T_'), write(PredB), write(').'), nl,
+    writeAsteriskHelper(Head, Bs, [not B | D], OriB, Num).
+writeAsteriskHelper(Head, [B | Bs], D, OriB, Num) :-
+    !,
+    Head =.. [Pred | Terms],
+    B =.. [PredB | TermsB],
+    length(D, Len),
+    write(Pred), write('_star_'), write(Num), write('('), writeTerms(Terms, withcomma), write('I, O, D) :-'), nl,
+    write('    D = [(rule_r('), write(Head), write(', '), write(OriB), write('), I, E_0, T_rule_r)'),
+    writeAsteriskD(D, 0), write(', (not_'), write(B), write(', E_'), write(Len), write(', O, T_not_'), write(PredB), write(')],'), nl,
+    write('    rule_r('), write(Head), write(', '), write(OriB), write(', I, E_0, T_rule_r),'), nl,
+    writeAsteriskHelper2(D, 0),
+    write('    not_'), write(PredB), write('('), writeTerms(TermsB, withcomma), write('E_'), write(Len), write(', O, T_not_'), write(PredB), write(').'), nl,
+    writeAsteriskHelper(Head, Bs, [B | D], OriB, Num).
+
+writeAsteriskD([], _).
+writeAsteriskD([not B | Bs], Num) :-
+    !,
+    B =.. [PredB | _],
+    NumPlusOne is Num + 1,
+    write(', (not_'), write(B), write(', E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_not_'), write(PredB), write(')'),
+    writeAsteriskD(Bs, NumPlusOne).
+writeAsteriskD([B | Bs], Num) :-
+    B =.. [PredB | _],
+    NumPlusOne is Num + 1,
+    write(', ('), write(B), write(', E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_'), write(PredB), write(')'),
+    writeAsteriskD(Bs, NumPlusOne).
+
+writeAsteriskHelper2([], _).
+writeAsteriskHelper2([not B | Bs], Num) :-
+    !,
+    B =.. [PredB | TermsB],
+    NumPlusOne is Num + 1,
+    write('    not_'), write(PredB), write('('), writeTerms(TermsB, withcomma), write('E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_not_'), write(PredB), write('),'), nl,
+    writeAsteriskHelper2(Bs, NumPlusOne).
+writeAsteriskHelper2([B | Bs], Num) :-
+    !,
+    B =.. [PredB | TermsB],
+    NumPlusOne is Num + 1,
+    write('    '), write(PredB), write('('), writeTerms(TermsB, withcomma), write('E_'), write(Num), write(', E_'), write(NumPlusOne), write(', T_'), write(PredB), write('),'), nl,
+    writeAsteriskHelper2(Bs, NumPlusOne).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : O
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+oTransformation :-
+    oTransformationHeader,
+    isAbducible(Abd, _),
+    writeO(Abd),
+    writeNotO(Abd),
+    fail.
+oTransformation.
+
+oTransformationHeader :-
+    nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    write('% Transformation : O'), nl,
+    write('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'), nl,
+    nl.
+
+% writeO(Pred/Arity) :-
+%     write(Pred), write('('), writeX(Arity, withcomma), write('I, O, _) :- isAbducible('),
+%     write(Pred), write(' / '), write(Arity), write(', 0), insert_abducible('), write(Pred), writeX(Arity), write(', I, O).'), nl.
+    
+% writeNotO(Pred/Arity) :-
+%     write('not_'), write(Pred), write('('), writeX(Arity, withcomma), write('I, O, _) :- isAbducible('),
+%     write(Pred), write(' / '), write(Arity), write(', 0), insert_abducible('), write('not '), write(Pred), writeX(Arity), write(', I, O).'), nl.
+
+writeO(Pred/Arity) :-
+    write(Pred), write('('), writeX(Arity, withcomma), write('I, O, T) :- insert_abducible('), write(Pred), writeX(Arity), write(', I, O, T).'), nl.
+    
+writeNotO(Pred/Arity) :-
+    write('not_'), write(Pred), write('('), writeX(Arity, withcomma), write('I, O, T) :- insert_abducible('), write('not '), write(Pred), writeX(Arity), write(', I, O, T).'), nl.

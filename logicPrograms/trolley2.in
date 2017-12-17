@@ -1,0 +1,20 @@
+abds([push/1]).
+intvs([hit/1]).
+
+trolley_arriving.
+trolley_to(main) <- trolley_arriving, not trolley_stopped.
+trolley_stopped <- heavy(X), hit(X).
+
+on(main, 5).
+on(bridge, 1).
+heavy(1).
+
+hit(X) <- on(Y, X), trolley_to(Y).
+hit(X) <- on(bridge, X), push(X).
+
+save(X) <- not hit(X).
+
+dilemma(save(5), save(1)).
+dilemma(save(1), save(5)).
+
+follow_utilitarian <- dilemma(save(X), save(Y)), save(X), not save(Y), prolog(X > Y).

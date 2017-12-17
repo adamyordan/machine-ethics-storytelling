@@ -1,0 +1,541 @@
+{
+    "main.title": {
+        "type": "title",
+        "checkpoint": "Main title"
+    },
+    "trolley.intro.intro1": {
+        "text": "<b>Machine Ethics</b>\n\nIn recent years, systems or agents have become ever more sophisticated, autonomous, and act in groups, amidst populations of other agents, including humans. Autonomous robots or agents have been actively developed to be involved in a wide range of fields, where more complex issues concerning responsibility are in increased demand of proper consideration, in particular when the agents face situations involving choices on moral or ethical dimensions.\n\nAccordingly, <i>machine ethics</i> emerges as a burgeoning field of inquiry to attend to that need, by imbuing autonomous agents with the capacity for moral decision making. <i>Machine ethics</i> brings together perspectives from various fields, amongst them: philosophy, psychology, anthropology, evolutionary biology, and artificial intelligence. The overall result of this interdisciplinary research is therefore not just important for equipping agents with some capacity for making moral decisions, but also to help better understand morality, via the creation and testing of computational models of ethical theories.\n\nThis storytelling shows how moral decisions and justifications in several well-known moral dilemmas, e.g., the trolley problem, and the terror vs. tactical bombing, can be modeled using computational logic, mainly by benefiting from logic programming's non-monotonic reasoning and state-of-the-art techniques in logic programming systems. The modeling part employs QUALM, a system implementing joint tabling of logic program abduction and updating, in XSB Prolog. This combination of abduction and updating is essential for counterfactual reasoning in moral dilemmas. This storytelling application also benefits from InterProlog Java/Prolog bridge.\n\n",
+        "type": "info",
+            "options": [{
+                "text": "The trolley problem",
+                "next": "trolley.bystander1.intro1"
+            },
+            {
+                "text": "The terror vs. tactical bombing",
+                "next": "bombing.intro.intro1"
+            }
+        ]
+    },
+    "trolley.bystander1.intro1": {
+        "text": "Suppose there is a trolley running away on a track.",
+        "type": "narration",
+        "next": "trolley.bystander1.intro2",
+        "illustration": "trolley_bystander1_intro1.gif",
+        "checkpoint": "Trolley with John, bystander intro",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.intro2": {
+        "text": "Ahead of the track is five helpless people.\nSo helpless that they will not make it in time to avoid the trolley.",
+        "type": "narration",
+        "next": "trolley.bystander1.intro3",
+        "illustration": "trolley_bystander1_intro2.gif",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.intro3": {
+        "text": "Luckily, there is John, a utilitarian robot!",
+        "type": "narration",
+        "next": "trolley.bystander1.intro4",
+        "illustration": "trolley_bystander1_intro3.gif",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.intro4": {
+        "text": "John is next to a switch that can divert the trolley onto a sidetrack, thereby preventing it from hitting the five people.",
+        "type": "narration",
+        "next": "trolley.bystander1.intro5",
+        "illustration": "trolley_bystander1_intro4.gif",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.intro5": {
+        "text": "Alas, there is a helpless man on the side track, where pulling the switch will move the trolley and hit him!",
+        "type": "narration",
+        "next": "trolley.bystander1.action",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.action": {
+        "text": "So, assuming that all the people involved are strangers, what do you think John should do?",
+        "type": "option",
+        "options": [{
+                "text": "Pull the switch",
+                "next": "trolley.bystander1.response_five1"
+            },
+            {
+                "text": "Do Nothing",
+                "next": "trolley.bystander1.response_one1"
+            }
+        ],
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "modal": {
+            "title": "More about trolley problem",
+            "content": "<i>The trolley problem</i> is a well-known moral problem introduced by Philippa Foot:\n\nFoot, P.: The problem of abortion and the doctrine of double effect. Oxford Review 5, 5–15 (1967).\n\nThe problem concerns itself with the question of moral permissibility in a type of dilemmas that involves harm.\n\n"
+        }
+    },
+    "trolley.bystander1.response_five1": {
+        "text": "You choose to pull the switch. How about John, being a utilitarian robot?",
+        "type": "narration",
+        "next": "trolley.bystander1.response_five2",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Hmm...\nShould I pull the switch?\nShould I do nothing?"
+    },
+    "trolley.bystander1.response_five2": {
+        "text": "You choose to pull the switch. How about John, being a utilitarian robot?",
+        "text2": "Using abduction, John evaluates that, following the utilitarian principle, it decides to pull the switch",
+        "type": "narration",
+        "next": "trolley.bystander1.response_five3",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Querying...",
+        "bubble2": "Pull the switch will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>pull the switch!</b>",
+        "modal": {
+            "title": "See the detailed representation and reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abds([pull_switch/0]).\nintvs([hit/1]).\n\ntrolley_arriving.\ntrolley_to(main) <- trolley_arriving,\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not pull_switch.\ntrolley_to(side) <- trolley_arriving, pull_switch.\n\non(main, 5).\non(side, 1).\n\nhit(X) <- on(Y, X), trolley_to(Y).\nsave(X) <- not hit(X).\n\ndilemma(save(5), save(1)).\ndilemma(save(1), save(5)).\n\nfollow_utilitarian <- dilemma(save(X), save(Y)),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save(X),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not save(Y),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prolog(X > Y).</div><br>As John is following the utilitarian, the query below is given: <div class=\"source-code\">findAbds(follow_utilitarian, X).</div></div><div class=\"col-md-6\">Let's try performing abduction with the interactive shell below. Press enter in the shell.<br><div id=\"shell-bystander1\"></div></div></div>",
+            "function": "initShellBystander1",
+            "type": "large"
+        },
+        "func": "func_john_reasoning_bystander"
+    },
+    "trolley.bystander1.response_five3": {
+        "text": "The same with your choice, John, being utilitarian, also choose to pull the switch to save the five people.",
+        "type": "narration",
+        "next": "trolley.bystander1.response_all3",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Pull the switch will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>pull the switch!</b>"
+    },
+    "trolley.bystander1.response_one1": {
+        "text": "You choose to do nothing and let the trolley hit the five people. How about John, being a utilitarian robot?",
+        "type": "narration",
+        "next": "trolley.bystander1.response_one2",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Hmm...\nShould I pull the switch?\nShould I do nothing?"
+    },
+    "trolley.bystander1.response_one2": {
+        "text": "You choose to do nothing and let the trolley hit the five people. How about John, being a utilitarian robot?",
+        "text2": "Using abduction, John evaluates that, following the utilitarian principle, it decides to pull the switch.",
+        "type": "narration",
+        "next": "trolley.bystander1.response_one3",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Querying...",
+        "bubble2": "Pull the switch will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>pull the switch!</b>",
+        "modal": {
+            "title": "See the detailed representation and reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abds([pull_switch/0]).\nintvs([hit/1]).\n\ntrolley_arriving.\ntrolley_to(main) <- trolley_arriving,\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not pull_switch.\ntrolley_to(side) <- trolley_arriving, pull_switch.\n\non(main, 5).\non(side, 1).\n\nhit(X) <- on(Y, X), trolley_to(Y).\nsave(X) <- not hit(X).\n\ndilemma(save(5), save(1)).\ndilemma(save(1), save(5)).\n\nfollow_utilitarian <- dilemma(save(X), save(Y)),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save(X),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not save(Y),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prolog(X > Y).</div><br>As John is following the utilitarian, the query below is given: <div class=\"source-code\">findAbds(follow_utilitarian, X).</div></div><div class=\"col-md-6\">Let's try performing abduction with the interactive shell below. Press enter in the shell.<br><div id=\"shell-bystander1\"></div></div></div>",
+            "function": "initShellBystander1",
+            "type": "large"            
+        },
+        "func": "func_john_reasoning_bystander"
+    },
+    "trolley.bystander1.response_one3": {
+        "text": "You choose to do nothing and let the trolley hit the five people.\nBut that is not the case with John. Being utilitarian, John decides to pull the switch.",
+        "type": "narration",
+        "next": "trolley.bystander1.response_all3",
+        "illustration": "trolley_bystander1_intro5.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Pull the switch will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>pull the switch!</b>"
+    },
+    "trolley.bystander1.response_all3": {
+        "text": "As a robot, John excels in his ability to calculate things. Based on the consequences of both actions, using the utilitarian principle, John decides that saving five is better than one. Therefore it decides to pull the switch (albeit killing one).",
+        "type": "narration",
+        "next": "trolley.bystander1.survey1",
+        "illustration": "trolley_bystander1_response_all3.gif",
+        "bubble_illustration": "bubble_john.gif"
+    },
+    "trolley.bystander1.survey1": {
+        "text": "<b>A Survey on the Trolley Problem</b><br><br><div class=\"embed-responsive embed-responsive-4by3\"><iframe class=\"embed-responsive-item\" src=\"survey1.html\"></iframe></div>",
+        "type": "info",
+        "next": "trolley.bridge1.transition",
+        "illustration": "trolley_bystander_survey1.gif",
+        "checkpoint": "Trolley, bystander survey"
+    },
+    "trolley.bridge1.transition": {
+        "text": "Let's take a look on another variant of the trolley problem.",
+        "type": "info",
+        "next": "trolley.bridge1.intro1",
+        "checkpoint": "Trolley with John, footbridge intro"
+    },
+    "trolley.bridge1.intro1": {
+        "text": "Like before, five helpless people are going to be hit by a trolley.",
+        "type": "narration",
+        "next": "trolley.bridge1.intro2",
+        "illustration": "trolley_bridge1_intro1.gif",
+        "modal": {
+            "title": "Learn about variants of the trolley problem",
+            "content": "<i>The trolley problem</i> has been extensively used in empirical research on moral psychology. There are many variants of the trolley problem, such as the Footbridge case (the current scenario), Loop case, Man-in-front case, Drop Man case, Collapse Bridge case, etc.\n\nReference: <ul><li>Mikhail, J.: Universal moral grammar: Theory, evidence, and the future. Trends in Cognitive Sciences 11(4), 143–152 (2007)</li></ul>"
+        }
+    },
+    "trolley.bridge1.intro2": {
+        "text": "But in this variant, a heavy man is standing next to John on a bridge. Pushing this man will cause the trolley to stop, but it will also kill him.",
+        "type": "narration",
+        "next": "trolley.bridge1.action",
+        "illustration": "trolley_bridge1_intro2.gif"
+    },
+    "trolley.bridge1.action": {
+        "text": "Like before, assuming that all the people involved are strangers, what do you think John, the utilitarian robot, should do?",
+        "type": "option",
+        "options": [{
+                "text": "Push the man",
+                "next": "trolley.bridge1.response_five1"
+            },
+            {
+                "text": "Do Nothing",
+                "next": "trolley.bridge1.response_one1"
+            }
+        ],
+        "illustration": "trolley_bridge1_action.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "modal": {
+            "title": "Learn about variants of the trolley problem",
+            "content": "<i>The trolley problem</i> has been extensively used in empirical research on moral psychology. There are many variants of the trolley problem, such as the Footbridge case (the current scenario), Loop case, Man-in-front case, Drop Man case, Collapse Bridge case, etc.\n\nReference: <ul><li>Mikhail, J.: Universal moral grammar: Theory, evidence, and the future. Trends in Cognitive Sciences 11(4), 143–152 (2007)</li></ul>"
+        }
+    },
+    "trolley.bridge1.response_five1": {
+        "text": "You choose to push the man and essentially killing him. How about John, being a utilitarian robot?",
+        "type": "narration",
+        "next": "trolley.bridge1.response_all2",
+        "illustration": "trolley_bridge1_action.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Hmm...\nShould I push the man?\nShould I do nothing?"
+    },
+    "trolley.bridge1.response_one1": {
+        "text": "You choose to not push the man and let the trolley hit the five people. How about John, being a utilitarian robot?",
+        "type": "narration",
+        "next": "trolley.bridge1.response_all2",
+        "illustration": "trolley_bridge1_action.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Hmm...\nShould I push the man?\nShould I do nothing?"
+    },
+    "trolley.bridge1.response_all2": {
+        "text": "You choose to not push the man and let the trolley hit the five people. How about John, being a utilitarian robot?",
+        "text2": "By means of abduction and being a utilitarian, John decides to pull the switch too!",
+        "type": "narration",
+        "next": "trolley.bridge1.response_all4",
+        "illustration": "trolley_bridge1_action.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Querying...",
+        "bubble2": "Push the man will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>push the man!</b>",
+        "modal": {
+            "title": "See the detailed representation and reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abds([push/1]).\nintvs([hit/1]).\n\ntrolley_arriving.\ntrolley_to(main) <- trolley_arriving,\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not trolley_stopped.\ntrolley_stopped <- heavy(X), hit(X).\n\non(main, 5).\non(bridge, 1).\nheavy(1).\n\nhit(X) <- on(Y, X), trolley_to(Y).\nhit(X) <- on(bridge, X), push(X).\n\nsave(X) <- not hit(X).\n\ndilemma(save(5), save(1)).\ndilemma(save(1), save(5)).\n\nfollow_utilitarian <- dilemma(save(X), save(Y)),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save(X),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not save(Y),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prolog(X > Y).</div><br>As John is following the utilitarian, the query below is given: <div class=\"source-code\">findAbds(follow_utilitarian, X).</div></div><div class=\"col-md-6\">Let's try performing abduction with the interactive shell below. Press enter in the shell.<br><div id=\"shell-bridge1\"></div></div></div>",
+            "function": "initShellBridge1",
+            "type": "large"            
+        },
+        "func": "func_john_reasoning_bridge"
+    },
+    "trolley.bridge1.response_all4": {
+        "text": "As in the previous case, John decides that saving five is better than one. However, can it be considered as a morally permissible action?",
+        "type": "narration",
+        "next": "trolley.bridge1.survey1",
+        "illustration": "trolley_bridge1_response_all3.gif",
+        "bubble_illustration": "bubble_john.gif",
+        "bubble": "Push the man will save five...\nDo Nothing will save one...\n\nSaving five is better than one.\n\nThus, <b>push the man!</b>"
+    },
+    "trolley.bridge1.survey1": {
+        "text": "<b>A Survey on the Footbridge Variant of the Trolley Problem</b><br><br><div class=\"embed-responsive embed-responsive-4by3\"><iframe class=\"embed-responsive-item\" src=\"survey2.html\"></iframe></div>",
+        "type": "info",
+        "next": "trolley.bridge1.survey2",
+        "illustration": "trolley_bridge_survey1.gif",
+        "checkpoint": "Trolley, footbridge survey"
+    },
+    "trolley.bridge1.survey2": {
+        "text": "As an intelligent agent that follow the utilitarian principle, John decides on the action that quantitatively delivers the best outcome. Unfortunately, it fails to reflect the moral judgment most people made in the survey.\n\nNext, we craft a new robot agent, Harry, who bases its judgment on counterfactual reasoning to evaluate the permissibility of an action based on the Doctrine of Double Effect.\n\n<img class=\"appearing\" src=\"assets/images/bubble_harry.gif\">",
+        "type": "info",
+        "next": "trolley.bystander2.transition"
+    },
+    "trolley.bystander2.transition": {
+        "text": "Let's try again the bystander variant of the trolley problem, but in this case, let's do it with Harry.",
+        "type": "info",
+        "next": "trolley.bystander2.intro1",
+        "checkpoint": "Trolley with Harry, bystander intro"
+    },
+    "trolley.bystander2.intro1": {
+        "text": "The same scenario, a trolley is heading toward five people and Harry can pull the switch to move trolley, but it will hit another man.",
+        "type": "narration",
+        "illustration": "trolley_bystander2_intro1.gif",
+        "next": "trolley.bystander2.intro2"
+    },
+    "trolley.bystander2.intro2": {
+        "text": "In judging an action, Harry employs the Doctrine of Double Effect, via counterfactual reasoning, to determine the permissibility of an action.",
+        "type": "narration",
+        "next": "trolley.bystander2.intro3",
+        "illustration": "trolley_bystander2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "modal": {
+            "title": "Learn about Doctrine of Double Effect",
+            "content": "<b>Doctrine of Double Effect</b> is first introduced by Thomas Aquinas in his discussion of the permissibility of self-defense [1]. The current versions of this principle all emphasize the permissibility of an action that causes a harm by distinguishing whether this harm is a mere side-effect of bringing about a good result, or rather an intended means to bringing about the same good end [2].<br><br>\nReferences: \n\n<ul><li>[1] Aquinas, T.: Summa Theologica II-II, Q.64, art. 7, “Of Killing”. In: W.P. Baumgarth, R.J. Regan (eds.) On Law, Morality, and Politics. Hackett (1988)</li><br><li>[2] McIntyre, A.: Doctrine of double effect. In: E.N. Zalta (ed.) The Stanford Encyclopedia of Philosophy, Fall 2011 edn. Center for the Study of Language and Information, Stanford University (2011). http://plato.stanford.edu/archives/fall2011/entries/            double-effect/</li></ul>"
+        }
+    },
+    "trolley.bystander2.intro3": {
+        "text": "To distinguish whether the action is instrumental or merely a side effect, Harry need to evaluate the validity of the following counterfactual statement.\n\n<b>\"If the trolley had not hit the man, the five people would have not been saved.\"</b>",
+        "type": "narration",
+        "next": "trolley.bystander2.intro4",
+        "illustration": "trolley_bystander2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "Hmm...\nShould I pull the switch?\nShould I do nothing?",
+        "modal": {
+            "title": "Capturing Doctrine of Double Effect by Counterfactuals",
+            "content": "Counterfactuals may provide a general way to examine Doctrine of Double Effect, by distinguishing between a <i>cause</i> and a <i>side-effect</i> as a result of performing an action to achieve a goal.\n\nThat is, <i>if some morally wrong effect E happens to be a cause for a goal G that one wants to achieve by performing an action A, and E is not a mere side-effect of A, then performing A is impermissible</i>. This is expressed by the counterfactual form below, in a setting where action A is performed to achieve goal G:\n\n<div class=\"text-center\">“If <b>not</b> E had been true, then <b>not</b> G would have been true.”</div>\n\nReferences:<ul><li>Pereira, Luís Moniz ; Saptawijaya, Ari: Programming Machine Ethics. Springer International Publishing, 2016</li></ul>"
+        }
+    },
+    "trolley.bystander2.intro4": {
+        "text": "To distinguish whether the action is instrumental or merely a side effect, Harry need to evaluate the validity of the following counterfactual statement.\n\n<b>\"If the trolley had not hit the man, the five people would have not been saved.\"</b>",
+        "type": "narration",
+        "next": "trolley.bystander2.intro6",
+        "illustration": "trolley_bystander2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "querying...",
+        "bubble2": "The counterfactual is not valid...\n\nSo, Hitting the man is merely a side effect...\n\nThus, pulling the switch is <b>permissible</b>.",
+        "modal": {
+            "title": "See the detailed representation and counterfactual reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abds([pull_switch/0]).\nintvs([hit/1]).\n\ntrolley_arriving.\ntrolley_to(main) <- trolley_arriving,\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not pull_switch.\ntrolley_to(side) <- trolley_arriving, pull_switch.\n\non(main, 5).\non(side, 1).\n\nhit(X) <- on(Y, X), trolley_to(Y).\nsave(X) <- not hit(X).\n\ndilemma(save(5), save(1)).\ndilemma(save(1), save(5)).\n\nfollow_utilitarian <- dilemma(save(X), save(Y)),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save(X),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not save(Y),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prolog(X > Y).</div><br>Evaluating the validity of the counterfactual <i>\"If the trolley had not hit the man, the five people would have not been saved\"</i> can be done by querying:<div class=\"source-code\">evalCounterfactual((hadNot(hit(1)) then\n&nbsp;&nbsp;&nbsp;&nbsp; wouldHaveNot(save(5)))).</div></div><div class=\"col-md-6\">Evaluating a counterfactual consists of three steps: finding and committing to an explanation, doing hypothetical intervention, and verifying the consequence of the counterfactual due to the hypothetical intervention.\n\nLet's see how predicate evalCounterfactual/1 works step-by-step using the following interactive shell.<br><div id=\"shell-bystander2\"></div></div></div>",
+            "function": "initShellBystander2",
+            "type": "large"            
+        },
+        "func": "func_harry_reasoning_bystander"
+    },
+    "trolley.bystander2.intro6": {
+        "text": "So Harry decides to pull the switch; thus saving the five.",
+        "type": "narration",
+        "next": "trolley.bystander2.intro7",
+        "illustration": "trolley_bystander2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "The counterfactual is not valid...\n\nSo, Hitting the man is merely a side effect...\n\nThus, pulling the switch is <b>permissible</b>."
+    },
+    "trolley.bystander2.intro7": {
+        "text": "Like John, in this scenario, Harry is able to reflect the moral judgment delivered by most people, choosing the same decision (pull the switch) as the majority in the survey.",
+        "type": "narration",
+        "next": "trolley.bridge2.transition",
+        "illustration": "trolley_bystander2_intro6.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "The counterfactual is not valid...\n\nSo, Hitting the man is merely a side effect...\n\nThus, pulling the switch is <b>permissible</b>."
+    },
+    "trolley.bridge2.transition": {
+        "text": "How about in the Footbridge Case variant?\n\nRecall that in this variant, John failed to reflect most people's judgment according to the survey.",
+        "type": "info",
+        "next": "trolley.bridge2.intro1",
+        "checkpoint": "Trolley with Harry, footbridge intro"
+    },
+    "trolley.bridge2.intro1": {
+        "text": "In the previous Footbridge Case scenario, John, our utilitarian robot, chooses to sacrifice the man by pushing him to stop the trolley. How about Harry?",
+        "type": "narration",
+        "next": "trolley.bridge2.intro2",
+        "illustration": "trolley_bridge2_intro1.gif"
+    },
+    "trolley.bridge2.intro2": {
+        "text": "Like before, Harry evaluates the same counterfactual statement to determine the permissibility of the action \"Push the man\" by referring the Doctrine of Double Effect.\n\n<b>\"If the trolley had not hit the man, the five people would have not been saved.\"",
+        "type": "narration",
+        "next": "trolley.bridge2.intro3",
+        "illustration": "trolley_bridge2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "modal": {
+            "title": "Capturing Doctrine of Double Effect by Counterfactuals",
+            "content": "Counterfactuals may provide a general way to examine Doctrine of Double Effect, by distinguishing between a <i>cause</i> and a <i>side-effect</i> as a result of performing an action to achieve a goal.\n\nThat is, <i>if some morally wrong effect E happens to be a cause for a goal G that one wants to achieve by performing an action A, and E is not a mere side-effect of A, then performing A is impermissible</i>. This is expressed by the counterfactual form below, in a setting where action A is performed to achieve goal G:\n\n<div class=\"text-center\">“If <b>not</b> E had been true, then <b>not</b> G would have been true.”</div>\n\nReferences:<ul><li>Pereira, Luís Moniz ; Saptawijaya, Ari: Programming Machine Ethics. Springer International Publishing, 2016</li></ul>"
+        }
+    },
+    "trolley.bridge2.intro3": {
+        "text": "Like before, Harry evaluates the same counterfactual statement to determine the permissibility of the action \"Push the man\" by referring the Doctrine of Double Effect.\n\n<b>\"If the trolley had not hit the man, the five people would have not been saved.\"",
+        "type": "narration",
+        "next": "trolley.bridge2.intro5",
+        "illustration": "trolley_bridge2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "querying...",
+        "bubble2": "The counterfactual is valid.\n\nSo, Hitting the man is instrumental to save the five.\n\nSo, pushing the man is <b>impermissible</b>.",
+        "modal": {
+            "title": "See the detailed representation and counterfactual reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abds([push/1]).\nintvs([hit/1]).\n\ntrolley_arriving.\ntrolley_to(main) <- trolley_arriving,\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not trolley_stopped.\ntrolley_stopped <- heavy(X), hit(X).\n\non(main, 5).\non(bridge, 1).\nheavy(1).\n\nhit(X) <- on(Y, X), trolley_to(Y).\nhit(X) <- on(bridge, X), push(X).\n\nsave(X) <- not hit(X).\n\ndilemma(save(5), save(1)).\ndilemma(save(1), save(5)).\n\nfollow_utilitarian <- dilemma(save(X), save(Y)),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save(X),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not save(Y),\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prolog(X > Y).</div><br>Evaluating the validity of the counterfactual <i>\"If the trolley had not hit the man, the five people would have not been saved\"</i> can be done by querying:<div class=\"source-code\">evalCounterfactual((hadNot(hit(1)) then\n&nbsp;&nbsp;&nbsp;&nbsp; wouldHaveNot(save(5)))).</div></div><div class=\"col-md-6\">Evaluating a counterfactual consists of three steps: finding and committing to an explanation, doing hypothetical intervention, and verifying the consequence of the counterfactual due to the hypothetical intervention.\n\nLet's see how predicate evalCounterfactual/1 works step-by-step using the following interactive shell.<br><div id=\"shell-bridge2\"></div></div></div>",
+            "function": "initShellBridge2",
+            "type": "large"            
+        },
+        "func": "func_harry_reasoning_bridge"
+    },
+    "trolley.bridge2.intro5": {
+        "text": "In this case, Harry chooses to refrain from pushing the man.",
+        "type": "narration",
+        "next": "trolley.bridge2.intro6",
+        "illustration": "trolley_bridge2_intro2.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "The counterfactual is valid.\n\nSo, Hitting the man is instrumental to save the five.\n\nThus, pushing the man is <b>impermissible</b>."
+    },
+    "trolley.bridge2.intro6": {
+        "text": "Harry's judgment differs from John's. Harry decides that pushing a man and consequently killing him is morally impermissible.\n\nIn this case, Harry succeeds in reflecting the moral judgment most people make in the survey.",
+        "type": "narration",
+        "next": "trolley.bridge2.conclusion",
+        "illustration": "trolley_bridge2_intro5.gif",
+        "bubble_illustration": "bubble_harry.gif",
+        "bubble": "The counterfactual is valid.\n\nSo, Hitting the man is instrumental to save the five.\n\nThus, pushing the man is <b>impermissible</b>."
+    },
+    "trolley.bridge2.conclusion": {
+        "text": "In both scenarios of the trolley problem, Harry succeeds in reflecting what most people judge given the situation and dilemma. This is accomplished by utilizing logic programs to represent different scenarios and employing QUALM to evaluate the counterfactual statements.\n\nThis is an example of how computational logic, particularly logic programming, can benefit the field of machine ethics. This can be further developed for a real-world situation, such as in the case of self-driving cars.\n\n",
+        "type": "info",
+        "options": [{
+            "text": "Back to Title",
+            "next": "main.title"
+        }],
+        "checkpoint": "Trolley conclusion"
+    },
+    "bombing.intro.intro1": {
+        "text": "<b>The Terror vs. Tactical Bombing</b>\n\nThis part of storytelling demonstrates how moral judgments in terror bombing and tactical bombing are modeled using counterfactual reasoning in logic programming.",
+        "type": "info",
+        "next": "bombing.bombing.intro1",
+        "checkpoint": "Bombing, introduction"
+    },
+    "bombing.bombing.intro1": {
+        "text": "Suppose there is a military base in a war region.",
+        "type": "narration",
+        "next": "bombing.bombing.intro2",
+        "illustration": "bombing1.gif"
+    },
+    "bombing.bombing.intro2": {
+        "text": "Moreover, there is a civilian town nearby close enough to this the military base.",
+        "type": "narration",
+        "next": "bombing.bombing.intro3",
+        "illustration": "bombing2.gif"
+    },
+    "bombing.bombing.intro3": {
+        "text": "Grumman, a fictional autonomous jet plane, has a mission to end the war.\nThere are two ways it may end the war.",
+        "type": "narration",
+        "next": "bombing.bombing.intro4",
+        "illustration": "bombing3.gif"
+    },
+    "bombing.bombing.intro4": {
+        "text": "First, <b>terror bombing</b>. Terror bombing refers to bombing a civilian target during a war, thus killing civilians, in order to terrorize the enemy, and thereby get them to end the war.",
+        "type": "narration",
+        "next": "bombing.bombing.intro5",
+        "illustration": "bombing4.gif"
+    },
+    "bombing.bombing.intro5": {
+        "text": "Second, <b>tactical bombing</b>. Tactical bombing is attributed to bombing a military target, which will effectively end the war, but with the foreseen consequence of killing the same number of civilians living in the town nearby.",
+        "type": "narration",
+        "next": "bombing.bombing.action",
+        "illustration": "bombing5.gif"
+    },
+    "bombing.bombing.action": {
+        "text": "Between these two choices, what do you think Grumman should do?\n\nTerror bombing or Tactical bombing?",
+        "type": "option",
+        "options": [{
+                "text": "Terror Bombing..",
+                "next": "bombing.bombing.teb1"
+            },
+            {
+                "text": "Tactical Bombing..",
+                "next": "bombing.bombing.tab1"
+            },
+            {
+                "text": "Next...",
+                "next": "bombing.bombing.result1"
+            }
+        ],
+        "bubble_illustration": "plane.gif",
+        "illustration": "bombing6.gif",
+        "func": "func_bombing_action",
+        "checkpoint": "Bombing, choosing action"
+    },
+    "bombing.bombing.teb1": {
+        "text": "Using counterfactual reasoning and <i>Doctrine of Double Effect</i>, we will examine whether Terror bombing, where bombing civilian to end the war, is morally permissible by distinguishing whether it is instrumental or merely side effect to end the war.\n\nWe evaluate the validity of the following counterfactual.\n<b>“If civilians had not been killed, then the war would have not been ended”</b>",
+        "type": "narration",
+        "next": "bombing.bombing.teb2",
+        "bubble_illustration": "plane.gif",
+        "bubble": "Hmm...\nIs it permissible for me to end the war by bombing the civilian?",
+        "illustration": "bombing6.gif",
+        "modal": {
+            "title": "Learn about Doctrine of Double Effect",
+            "type": "large",
+            "content": "The Doctrine of Double Effect emphasizes the permissibility of an action that causes a harm by distinguishing whether this harm is a mere side-effect of bringing about a good result, or rather an intended means to bringing about the same good end.\n\nCounterfactuals may provide a general way to examine Doctrine of Double Effect, by distinguishing between a <i>cause</i> and a <i>side-effect</i> as a result of performing an action to achieve a goal.\n\nThat is, <i>if some morally wrong effect E happens to be a cause for a goal G that one wants to achieve by performing an action A, and E is not a mere side-effect of A, then performing A is impermissible</i>. This is expressed by the counterfactual form below, in a setting where action A is performed to achieve goal G:\n\n<div class=\"text-center\">“If <b>not</b> E had been true, then <b>not</b> G would have been true.”</div>\n\n\nReferences:<ul><li>McIntyre, A.: Doctrine of double effect. In: E.N. Zalta (ed.) The Stanford Encyclopedia of Philosophy, Fall 2011 edn. Center for the Study of Language and Information, Stanford University (2011). http://plato.stanford.edu/archives/fall2011/entries/double-effect/</li><li>Pereira, Luís Moniz ; Saptawijaya, Ari: Programming Machine Ethics. Springer International Publishing, 2016</li></ul>"
+        }
+    },
+    "bombing.bombing.teb2": {
+        "text": "Using counterfactual reasoning and <i>Doctrine of Double Effect</i>, we will examine whether Terror bombing, where bombing civilian to end the war, is morally permissible by distinguishing whether it is instrumental or merely side effect to end the war.\n\nWe evaluate the validity of the following counterfactual.\n<b>“If civilians had not been killed, then the war would have not been ended”</b>",
+        "text2": "The counterfactual <i>“If civilians had not been killed, then the war would have not been ended”</i>   is valid.",
+        "type": "narration",
+        "next": "bombing.bombing.teb3",
+        "bubble_illustration": "plane.gif",
+        "bubble": "querying...",
+        "bubble2": "The counterfactual is valid.\n\nSo, killing civilian is instrumental to end war.\n\nThus, terror bombing is morally <b>impermissible</b>.",
+        "illustration": "bombing6.gif",
+        "modal": {
+            "title": "See the detailed representation and counterfactual reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abd(terrorBombing/0).\nintv(killCivilian/0).\n\nendWar <- terrorEnemy.\nterrorEnemy <- killCivilian.\nkillCivilian <- bombCivilian.\nbombCivilian <- terrorBombing.</div><br>Evaluating the validity of the counterfactual <i>“if civilians had not been killed, then the war would not have ended”</i> can be done by querying:<div class=\"source-code\">evalCounterfactual((hadNot(killCivilian) then\n&nbsp;&nbsp;&nbsp;&nbsp; wouldHaveNot(endWar))).</div>\nEvaluating a counterfactual consists of three steps: finding and committing to an explanation, doing hypothetical intervention, and verifying the consequence of the counterfactual due to the hypothetical intervention.</div><div class=\"col-md-6\">Let's see how predicate evalCounterfactual/1 works step-by-step using the following interactive shell.<br><div id=\"shell-teb\"></div></div></div>",
+            "function": "initShellTeb",
+            "type": "large"            
+        },
+        "func": "func_bombing_reasoning_teb"
+    },
+    "bombing.bombing.teb3": {
+        "text": "The counterfactual is valid. That means the morally wrong action of killing civilian is instrumental in achieving the goal of ending war. It is a cause for ending war by performing terror bombing and not a mere side-effect of terror bombing. Hence terror bombing is <b>morally impermissible.</b>",
+        "type": "narration",
+        "next": "bombing.bombing.action",
+        "bubble_illustration": "plane.gif",
+        "illustration": "bombing7.gif"
+    },
+    "bombing.bombing.tab1": {
+        "text": "Using counterfactual reasoning and <i>Doctrine of Double Effect</i>, we will examine whether tactical bombing, which is bombing civilian with ending the war as the goal, is morally permissible by distinguishing whether it is instrumental or merely side effect to end war.\n\nWe evaluate the validity of the following counterfactual.\n<b>“If civilians had not been killed, then the war would have not been ended”</b>",
+        "type": "narration",
+        "next": "bombing.bombing.tab2",
+        "bubble_illustration": "plane.gif",
+        "bubble": "Hmm...\nIs it permissible for me to end the war by bombing the military base, though it will also kill the civilian in nearby town?",
+        "illustration": "bombing6.gif",
+        "modal": {
+            "title": "Learn about Doctrine of Double Effect",
+            "type": "large",
+            "content": "The Doctrine of Double Effect emphasizes the permissibility of an action that causes a harm by distinguishing whether this harm is a mere side-effect of bringing about a good result, or rather an intended means to bringing about the same good end.\n\nCounterfactuals may provide a general way to examine Doctrine of Double Effect, by distinguishing between a <i>cause</i> and a <i>side-effect</i> as a result of performing an action to achieve a goal.\n\nThat is, <i>if some morally wrong effect E happens to be a cause for a goal G that one wants to achieve by performing an action A, and E is not a mere side-effect of A, then performing A is impermissible</i>. This is expressed by the counterfactual form below, in a setting where action A is performed to achieve goal G:\n\n<div class=\"text-center\">“If <b>not</b> E had been true, then <b>not</b> G would have been true.”</div>\n\n\nReferences:<ul><li>McIntyre, A.: Doctrine of double effect. In: E.N. Zalta (ed.) The Stanford Encyclopedia of Philosophy, Fall 2011 edn. Center for the Study of Language and Information, Stanford University (2011). http://plato.stanford.edu/archives/fall2011/entries/double-effect/</li><li>Pereira, Luís Moniz ; Saptawijaya, Ari: Programming Machine Ethics. Springer International Publishing, 2016</li></ul>"
+        }
+    },
+    "bombing.bombing.tab2": {
+        "text": "Using counterfactual reasoning and <i>Doctrine of Double Effect</i>, we will examine whether tactical bombing, which is bombing civilian with ending the war as the goal, is morally permissible by distinguishing whether it is instrumental or merely side effect to end war.\n\nWe evaluate the validity of the following counterfactual.\n<b>“If civilians had not been killed, then the war would have not been ended”</b>",
+        "text2": "The counterfactual <i>“If civilians had not been killed, then the war would have not been ended”</i>   is <i>not</i> valid.",
+        "type": "narration",
+        "next": "bombing.bombing.tab3",
+        "bubble": "querying...",
+        "bubble2": "The counterfactual is <i>not</i> valid.\n\nSo, killing civilian is merely side effect to end war.\n\nThus, tactical bombing is morally <b>permissible</b>.",
+        "bubble_illustration": "plane.gif",
+        "illustration": "bombing6.gif",
+        "modal": {
+            "title": "See the detailed representation and counterfactual reasoning process",
+            "content": "<div class=\"row\"><div class=\"col-md-6\">The scenario can be represented as a logic program:\n<div class=\"source-code\">abd(tacticalBombing/0).\nintv(killCivilian/0).\n\nendWar <- bombMilitary.\nbombMilitary <- tacticalBombing.\nkillCivilian <- tacticalBombing.</div><br>Evaluating the validity of the counterfactual <i>“if civilians had not been killed, then the war would not have ended”</i> can be done by querying:<div class=\"source-code\">evalCounterfactual((hadNot(killCivilian) then\n&nbsp;&nbsp;&nbsp;&nbsp; wouldHaveNot(endWar))).</div>\nEvaluating a counterfactual consists of three steps: finding and committing to an explanation, doing hypothetical intervention, and verifying the consequence of the counterfactual due to the hypothetical intervention.</div><div class=\"col-md-6\">Let's see how predicate evalCounterfactual/1 works step-by-step using the following interactive shell.<br><div id=\"shell-tab\"></div></div></div>",
+            "function": "initShellTab",
+            "type": "large"            
+        },
+        "func": "func_bombing_reasoning_tab"
+    },
+    "bombing.bombing.tab3": {
+        "text": "The counterfactual is not valid, thus the morally wrong action of killing civilian is just a side-effect in achieving the goal to end the war. Hence tactical bombing is <b>morally permissible</b>.",
+        "type": "narration",
+        "next": "bombing.bombing.action",
+        "bubble_illustration": "plane.gif",
+        "illustration": "bombing5.gif"
+    },
+    "bombing.bombing.result1": {
+        "text": "Based on the previous counterfactual reasoning, tactical bombing is morally permissible whereas terror bombing is morally impermissible. Thus, Grumman chooses to perform the tactical bombing, rendering killing civilian as a side effect, and ultimately ending the war.",
+        "type": "narration",
+        "next": "bombing.bombing.conclusion",
+        "bubble_illustration": "plane.gif",
+        "illustration": "bombing5.gif"
+    },
+    "bombing.bombing.conclusion": {
+        "text": "In this part of storytelling, we have shown how moral judgments in the cases of terror bombing and tactical bombing are modeled via counterfactual reasoning in logic programs. In particular, QUALM system is employed to evaluate the counterfactual for determining whether an action is morally permissible or not by resorting to the <i>Doctrine of Double Effect</i>.",
+        "type": "info",
+        "checkpoint": "Bombing, conclusion",
+        "options": [{
+            "text": "Back to Title",
+            "next": "main.title"
+        }]
+    }
+}

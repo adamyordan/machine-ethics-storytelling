@@ -1,0 +1,458 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- consult(runner).
+
+:- dynamic rule_r/5 as incremental.
+:- dynamic not_rule_r/5 as incremental.
+:- dynamic make_not/4 as incremental.
+:- dynamic not_make_not/4 as incremental.
+:- dynamic make/4 as incremental.
+:- dynamic not_make/4 as incremental.
+:- dynamic hit/4 as incremental.
+:- dynamic not_hit/4 as incremental.
+:- dynamic trolley_arriving/3 as incremental.
+:- dynamic not_trolley_arriving/3 as incremental.
+:- dynamic trolley_to/4 as incremental.
+:- dynamic not_trolley_to/4 as incremental.
+:- dynamic on/5 as incremental.
+:- dynamic not_on/5 as incremental.
+:- dynamic save/4 as incremental.
+:- dynamic not_save/4 as incremental.
+:- dynamic dilemma/5 as incremental.
+:- dynamic not_dilemma/5 as incremental.
+:- dynamic follow_utilitarian/3 as incremental.
+:- dynamic not_follow_utilitarian/3 as incremental.
+:- dynamic pull_switch/3 as incremental.
+:- dynamic not_pull_switch/3 as incremental.
+
+:- table hit_ab/3 as incremental.
+:- table trolley_arriving_ab/2 as incremental.
+:- table trolley_to_ab/3 as incremental.
+:- table on_ab/4 as incremental.
+:- table save_ab/3 as incremental.
+:- table dilemma_ab/4 as incremental.
+:- table follow_utilitarian_ab/2 as incremental.
+
+initProgram :-
+    markingAbducibles,
+    markingCompls,
+    markingTimeOfInterest.
+
+markingAbducibles :-
+    markAbducible(pull_switch / 0),
+    true.
+
+markingCompls :-
+    markCompl(pull_switch, not_pull_switch),
+    markCompl(hit(X_1), not_hit(X_1)),
+    markCompl(make(X_1), not_make(X_1)),
+    markCompl(trolley_arriving, not_trolley_arriving),
+    markCompl(trolley_to(X_1), not_trolley_to(X_1)),
+    markCompl(on(X_2, X_1), not_on(X_2, X_1)),
+    markCompl(make_not(X_1), not_make_not(X_1)),
+    markCompl(save(X_1), not_save(X_1)),
+    markCompl(dilemma(X_2, X_1), not_dilemma(X_2, X_1)),
+    markCompl(follow_utilitarian, not_follow_utilitarian),
+    markCompl(prolog(X_1), not_prolog(X_1)),
+    markCompl(false, not_false),
+    markCompl(rule_r(hit(_h1998), [make(hit(_h1998))]), not_rule_r(hit(_h1998), [make(hit(_h1998))])),
+    markCompl(rule_r(trolley_arriving, []), not_rule_r(trolley_arriving, [])),
+    markCompl(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), not_rule_r(trolley_to(main), [trolley_arriving,not pull_switch])),
+    markCompl(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), not_rule_r(trolley_to(side), [trolley_arriving,pull_switch])),
+    markCompl(rule_r(on(main,5), []), not_rule_r(on(main,5), [])),
+    markCompl(rule_r(on(side,1), []), not_rule_r(on(side,1), [])),
+    markCompl(rule_r(hit(_h1998), [on(_h2002,_h1998),trolley_to(_h2002),not make_not(hit(_h1998))]), not_rule_r(hit(_h1998), [on(_h2002,_h1998),trolley_to(_h2002),not make_not(hit(_h1998))])),
+    markCompl(rule_r(save(_h1998), [not hit(_h1998)]), not_rule_r(save(_h1998), [not hit(_h1998)])),
+    markCompl(rule_r(dilemma(save(5),save(1)), []), not_rule_r(dilemma(save(5),save(1)), [])),
+    markCompl(rule_r(dilemma(save(1),save(5)), []), not_rule_r(dilemma(save(1),save(5)), [])),
+    markCompl(rule_r(follow_utilitarian, [dilemma(save(_h2003),save(_h2005)),save(_h2003),not save(_h2005),prolog(_h2003 > _h2005)]), not_rule_r(follow_utilitarian, [dilemma(save(_h2003),save(_h2005)),save(_h2003),not save(_h2005),prolog(_h2003 > _h2005)])),
+    true.
+
+markingTimeOfInterest :-
+    markTimeOfInterest(hit, 0),
+    markTimeOfInterest(hit, 1),
+    markTimeOfInterest(make, 0),
+    markTimeOfInterest(make, 1),
+    markTimeOfInterest(trolley_arriving, 0),
+    markTimeOfInterest(trolley_arriving, 1),
+    markTimeOfInterest(trolley_to, 0),
+    markTimeOfInterest(trolley_to, 1),
+    markTimeOfInterest(on, 0),
+    markTimeOfInterest(on, 1),
+    markTimeOfInterest(make_not, 0),
+    markTimeOfInterest(make_not, 1),
+    markTimeOfInterest(save, 0),
+    markTimeOfInterest(save, 1),
+    markTimeOfInterest(dilemma, 0),
+    markTimeOfInterest(dilemma, 1),
+    markTimeOfInterest(follow_utilitarian, 0),
+    markTimeOfInterest(follow_utilitarian, 1),
+    markTimeOfInterest(prolog, 0),
+    markTimeOfInterest(prolog, 1),
+    markTimeOfInterest(false, 0),
+    markTimeOfInterest(false, 1),
+    true.
+
+query([], I, O, [], Qt) :-
+    !,
+    holds(not_false, I, O, _, Qt).
+
+query([not F | Fs], I, O, [NotF : T_NotF | Ts], Qt) :-
+    !,
+    compl(F, NotF),
+    holds(NotF, I, E, T_NotF, Qt),
+    query(Fs, E, O, Ts, Qt).
+
+query([F | Fs], I, O, [F : T_F | Ts], Qt) :-
+    !,
+    holds(F, I, E, T_F, Qt),
+    query(Fs, E, O, Ts, Qt).
+
+query(not F, I, O, T_F, Qt) :-
+    !,
+    compl(F, NotF),
+    holds(NotF, I, E, T_F, Qt),
+    holds(not_false, E, O, _, Qt).
+
+query(F, I, O, T_F, Qt) :-
+    holds(F, I, E, T_F, Qt),
+    holds(not_false, E, O, _, Qt).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Initial Transformation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+rule_r(hit(_h2032), [make(hit(_h2032))], I, I, 1).
+not_rule_r(hit(_h2032), [make(hit(_h2032))], I, I, 0).
+trolley_arriving(I, I, 1).
+not_trolley_arriving(I, I, 0).
+rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, I, 1).
+not_rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, I, 0).
+rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, I, 1).
+not_rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, I, 0).
+on(main, 5, I, I, 1).
+not_on(main, 5, I, I, 0).
+on(side, 1, I, I, 1).
+not_on(side, 1, I, I, 0).
+rule_r(hit(_h2032), [on(_h2036,_h2032),trolley_to(_h2036),not make_not(hit(_h2032))], I, I, 1).
+not_rule_r(hit(_h2032), [on(_h2036,_h2032),trolley_to(_h2036),not make_not(hit(_h2032))], I, I, 0).
+rule_r(save(_h2032), [not hit(_h2032)], I, I, 1).
+not_rule_r(save(_h2032), [not hit(_h2032)], I, I, 0).
+dilemma(save(5), save(1), I, I, 1).
+not_dilemma(save(5), save(1), I, I, 0).
+dilemma(save(1), save(5), I, I, 1).
+not_dilemma(save(1), save(5), I, I, 0).
+rule_r(follow_utilitarian, [dilemma(save(_h2037),save(_h2039)),save(_h2037),not save(_h2039),prolog(_h2037 > _h2039)], I, I, 1).
+not_rule_r(follow_utilitarian, [dilemma(save(_h2037),save(_h2039)),save(_h2037),not save(_h2039),prolog(_h2037 > _h2039)], I, I, 0).
+false(I, I, 0).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Apostrophe
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+hit_ab(_h2033, E_2, T) :-
+    active(rule_r(hit(_h2033), [make(hit(_h2033))]), T_rule),
+    E_1 = [],
+    make(hit(_h2033), E_1, E_2, T_make),
+    latest([(rule_r(hit(_h2033), [make(hit(_h2033))]), [], E_1, T_rule), (make(hit(_h2033)), E_1, E_2, T_make)], T).
+
+trolley_arriving_ab(E_1, T) :-
+    fail.
+
+trolley_to_ab(main, E_3, T) :-
+    active(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), T_rule),
+    E_1 = [],
+    trolley_arriving(E_1, E_2, T_trolley_arriving),
+    not_pull_switch(E_2, E_3, T_not_pull_switch),
+    latest([(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), [], E_1, T_rule), (trolley_arriving, E_1, E_2, T_trolley_arriving), (not_pull_switch, E_2, E_3, T_not_pull_switch)], T).
+
+trolley_to_ab(side, E_3, T) :-
+    active(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), T_rule),
+    E_1 = [],
+    trolley_arriving(E_1, E_2, T_trolley_arriving),
+    pull_switch(E_2, E_3, T_pull_switch),
+    latest([(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), [], E_1, T_rule), (trolley_arriving, E_1, E_2, T_trolley_arriving), (pull_switch, E_2, E_3, T_pull_switch)], T).
+
+on_ab(main, 5, E_1, T) :-
+    fail.
+
+on_ab(side, 1, E_1, T) :-
+    fail.
+
+hit_ab(_h2033, E_4, T) :-
+    active(rule_r(hit(_h2033), [on(_h2037,_h2033),trolley_to(_h2037),not make_not(hit(_h2033))]), T_rule),
+    E_1 = [],
+    on(_h2037, _h2033, E_1, E_2, T_on),
+    trolley_to(_h2037, E_2, E_3, T_trolley_to),
+    not_make_not(hit(_h2033), E_3, E_4, T_not_make_not),
+    latest([(rule_r(hit(_h2033), [on(_h2037,_h2033),trolley_to(_h2037),not make_not(hit(_h2033))]), [], E_1, T_rule), (on(_h2037, _h2033), E_1, E_2, T_on), (trolley_to(_h2037), E_2, E_3, T_trolley_to), (not_make_not(hit(_h2033)), E_3, E_4, T_not_make_not)], T).
+
+save_ab(_h2033, E_2, T) :-
+    active(rule_r(save(_h2033), [not hit(_h2033)]), T_rule),
+    E_1 = [],
+    not_hit(_h2033, E_1, E_2, T_not_hit),
+    latest([(rule_r(save(_h2033), [not hit(_h2033)]), [], E_1, T_rule), (not_hit(_h2033), E_1, E_2, T_not_hit)], T).
+
+dilemma_ab(save(5), save(1), E_1, T) :-
+    fail.
+
+dilemma_ab(save(1), save(5), E_1, T) :-
+    fail.
+
+follow_utilitarian_ab(E_5, T) :-
+    active(rule_r(follow_utilitarian, [dilemma(save(_h2038),save(_h2040)),save(_h2038),not save(_h2040),prolog(_h2038 > _h2040)]), T_rule),
+    E_1 = [],
+    dilemma(save(_h2038), save(_h2040), E_1, E_2, T_dilemma),
+    save(_h2038, E_2, E_3, T_save),
+    not_save(_h2040, E_3, E_4, T_not_save),
+    prolog(_h2038 > _h2040, E_4, E_5, T_prolog),
+    latest([(rule_r(follow_utilitarian, [dilemma(save(_h2038),save(_h2040)),save(_h2038),not save(_h2040),prolog(_h2038 > _h2040)]), [], E_1, T_rule), (dilemma(save(_h2038), save(_h2040)), E_1, E_2, T_dilemma), (save(_h2038), E_2, E_3, T_save), (not_save(_h2040), E_3, E_4, T_not_save), (prolog(_h2038 > _h2040), E_4, E_5, T_prolog)], T).
+
+make_ab(_h2028, E_1, T) :-
+    fail.
+
+make_not_ab(_h2028, E_1, T) :-
+    fail.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Plus
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+hit(X_1, I, O, T) :- hit_ab(X_1, E, T), produce_context(O, I, E).
+trolley_arriving(I, O, T) :- trolley_arriving_ab(E, T), produce_context(O, I, E).
+trolley_to(X_1, I, O, T) :- trolley_to_ab(X_1, E, T), produce_context(O, I, E).
+on(X_2, X_1, I, O, T) :- on_ab(X_2, X_1, E, T), produce_context(O, I, E).
+save(X_1, I, O, T) :- save_ab(X_1, E, T), produce_context(O, I, E).
+dilemma(X_2, X_1, I, O, T) :- dilemma_ab(X_2, X_1, E, T), produce_context(O, I, E).
+follow_utilitarian(I, O, T) :- follow_utilitarian_ab(E, T), produce_context(O, I, E).
+make(X_1, I, O, T) :- make_ab(X_1, E, T), produce_context(O, I, E).
+make_not(X_1, I, O, T) :- make_not_ab(X_1, E, T), produce_context(O, I, E).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : Minus & Asterisk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% not_hit
+
+not_hit(X_1, E_0, E_2, T) :-
+    copy_term((X_1), (X_1_0)), hit_star_1(X_1_0, E_0, E_1, D_1),
+    copy_term((X_1), (X_1_1)), hit_star_2(X_1_1, E_1, E_2, D_2),
+    joiningLists([D_1, D_2], D),
+    latest(D, T).
+
+hit_star_1(X_1, I, O, [(rule_r(hit(_h2044), [make(hit(_h2044))]), I, O, T)]) :-
+    rule_r(hit(_h2044), [make(hit(_h2044))], I, O, T),
+    [(X_1)] \= [(_h2044)].
+hit_star_1(_h2044, I, O, [(not_rule_r(hit(_h2044), [make(hit(_h2044))]), I, O, T)]) :-
+    not_rule_r(hit(_h2044), [make(hit(_h2044))], I, O, T),
+    T > 0.
+hit_star_1(_h2044, I, O, D) :-
+    D = [(rule_r(hit(_h2044), [make(hit(_h2044))]), I, E_0, T_rule_r), (not_make(hit(_h2044)), E_0, O, T_not_make)],
+    rule_r(hit(_h2044), [make(hit(_h2044))], I, E_0, T_rule_r),
+    not_make(hit(_h2044), E_0, O, T_not_make).
+
+hit_star_2(X_1, I, O, [(rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))]), I, O, T)]) :-
+    rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))], I, O, T),
+    [(X_1)] \= [(_h2056)].
+hit_star_2(_h2056, I, O, [(not_rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))]), I, O, T)]) :-
+    not_rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))], I, O, T),
+    T > 0.
+hit_star_2(_h2056, I, O, D) :-
+    D = [(rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))]), I, E_0, T_rule_r), (not_on(_h2060,_h2056), E_0, O, T_not_on)],
+    rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))], I, E_0, T_rule_r),
+    not_on(_h2060, _h2056, E_0, O, T_not_on).
+hit_star_2(_h2056, I, O, D) :-
+    D = [(rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))]), I, E_0, T_rule_r), (on(_h2060,_h2056), E_0, E_1, T_on), (not_trolley_to(_h2060), E_1, O, T_not_trolley_to)],
+    rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))], I, E_0, T_rule_r),
+    on(_h2060, _h2056, E_0, E_1, T_on),
+    not_trolley_to(_h2060, E_1, O, T_not_trolley_to).
+hit_star_2(_h2056, I, O, D) :-
+    D = [(rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))]), I, E_0, T_rule_r), (trolley_to(_h2060), E_0, E_1, T_trolley_to), (on(_h2060,_h2056), E_1, E_2, T_on), (make_not(hit(_h2056)), E_2, O, T_make_not)],
+    rule_r(hit(_h2056), [on(_h2060,_h2056),trolley_to(_h2060),not make_not(hit(_h2056))], I, E_0, T_rule_r),
+    trolley_to(_h2060, E_0, E_1, T_trolley_to),
+    on(_h2060, _h2056, E_1, E_2, T_on),
+    make_not(hit(_h2056), E_2, O, T_make_not).
+
+%%% not_make
+
+make(X_1, I, I, 0).
+not_make(X_1, I, I, 1).
+
+%%% not_trolley_arriving
+
+not_trolley_arriving(E_0, E_1, T) :-
+    trolley_arriving_star_1(E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+trolley_arriving_star_1(I, O, [(not_trolley_arriving, I, O, T)]) :-
+    fail.
+
+%%% not_trolley_to
+
+not_trolley_to(X_1, E_0, E_2, T) :-
+    copy_term((X_1), (X_1_0)), trolley_to_star_1(X_1_0, E_0, E_1, D_1),
+    copy_term((X_1), (X_1_1)), trolley_to_star_2(X_1_1, E_1, E_2, D_2),
+    joiningLists([D_1, D_2], D),
+    latest(D, T).
+
+trolley_to_star_1(X_1, I, O, [(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), I, O, T)]) :-
+    rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, O, T),
+    [(X_1)] \= [(main)].
+trolley_to_star_1(main, I, O, [(not_rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), I, O, T)]) :-
+    not_rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, O, T),
+    T > 0.
+trolley_to_star_1(main, I, O, D) :-
+    D = [(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), I, E_0, T_rule_r), (not_trolley_arriving, E_0, O, T_not_trolley_arriving)],
+    rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, E_0, T_rule_r),
+    not_trolley_arriving(E_0, O, T_not_trolley_arriving).
+trolley_to_star_1(main, I, O, D) :-
+    D = [(rule_r(trolley_to(main), [trolley_arriving,not pull_switch]), I, E_0, T_rule_r), (trolley_arriving, E_0, E_1, T_trolley_arriving), (pull_switch, E_1, O, T_pull_switch)],
+    rule_r(trolley_to(main), [trolley_arriving,not pull_switch], I, E_0, T_rule_r),
+    trolley_arriving(E_0, E_1, T_trolley_arriving),
+    pull_switch(E_1, O, T_pull_switch).
+
+trolley_to_star_2(X_1, I, O, [(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), I, O, T)]) :-
+    rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, O, T),
+    [(X_1)] \= [(side)].
+trolley_to_star_2(side, I, O, [(not_rule_r(trolley_to(side), [trolley_arriving,pull_switch]), I, O, T)]) :-
+    not_rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, O, T),
+    T > 0.
+trolley_to_star_2(side, I, O, D) :-
+    D = [(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), I, E_0, T_rule_r), (not_trolley_arriving, E_0, O, T_not_trolley_arriving)],
+    rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, E_0, T_rule_r),
+    not_trolley_arriving(E_0, O, T_not_trolley_arriving).
+trolley_to_star_2(side, I, O, D) :-
+    D = [(rule_r(trolley_to(side), [trolley_arriving,pull_switch]), I, E_0, T_rule_r), (trolley_arriving, E_0, E_1, T_trolley_arriving), (not_pull_switch, E_1, O, T_not_pull_switch)],
+    rule_r(trolley_to(side), [trolley_arriving,pull_switch], I, E_0, T_rule_r),
+    trolley_arriving(E_0, E_1, T_trolley_arriving),
+    not_pull_switch(E_1, O, T_not_pull_switch).
+
+%%% not_on
+
+not_on(X_2, X_1, E_0, E_2, T) :-
+    copy_term((X_2, X_1), (X_2_0, X_1_0)), on_star_1(X_2_0, X_1_0, E_0, E_1, D_1),
+    copy_term((X_2, X_1), (X_2_1, X_1_1)), on_star_2(X_2_1, X_1_1, E_1, E_2, D_2),
+    joiningLists([D_1, D_2], D),
+    latest(D, T).
+
+on_star_1(X_2, X_1, I, O, [(on(main,5), I, O, T)]) :-
+    on(main, 5, I, O, T),
+    [(X_2, X_1)] \= [(main, 5)].
+on_star_1(main, 5, I, O, [(not_on(main, 5), I, O, T)]) :-
+    fail.
+
+on_star_2(X_2, X_1, I, O, [(on(side,1), I, O, T)]) :-
+    on(side, 1, I, O, T),
+    [(X_2, X_1)] \= [(side, 1)].
+on_star_2(side, 1, I, O, [(not_on(side, 1), I, O, T)]) :-
+    fail.
+
+%%% not_make_not
+
+make_not(X_1, I, I, 0).
+not_make_not(X_1, I, I, 1).
+
+%%% not_save
+
+not_save(X_1, E_0, E_1, T) :-
+    copy_term((X_1), (X_1_0)), save_star_1(X_1_0, E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+save_star_1(X_1, I, O, [(rule_r(save(_h2044), [not hit(_h2044)]), I, O, T)]) :-
+    rule_r(save(_h2044), [not hit(_h2044)], I, O, T),
+    [(X_1)] \= [(_h2044)].
+save_star_1(_h2044, I, O, [(not_rule_r(save(_h2044), [not hit(_h2044)]), I, O, T)]) :-
+    not_rule_r(save(_h2044), [not hit(_h2044)], I, O, T),
+    T > 0.
+save_star_1(_h2044, I, O, D) :-
+    D = [(rule_r(save(_h2044), [not hit(_h2044)]), I, E_0, T_rule_r), (hit(_h2044), E_0, O, T_hit)],
+    rule_r(save(_h2044), [not hit(_h2044)], I, E_0, T_rule_r),
+    hit(_h2044, E_0, O, T_hit).
+
+%%% not_dilemma
+
+not_dilemma(X_2, X_1, E_0, E_2, T) :-
+    copy_term((X_2, X_1), (X_2_0, X_1_0)), dilemma_star_1(X_2_0, X_1_0, E_0, E_1, D_1),
+    copy_term((X_2, X_1), (X_2_1, X_1_1)), dilemma_star_2(X_2_1, X_1_1, E_1, E_2, D_2),
+    joiningLists([D_1, D_2], D),
+    latest(D, T).
+
+dilemma_star_1(X_2, X_1, I, O, [(dilemma(save(5),save(1)), I, O, T)]) :-
+    dilemma(save(5), save(1), I, O, T),
+    [(X_2, X_1)] \= [(save(5), save(1))].
+dilemma_star_1(save(5), save(1), I, O, [(not_dilemma(save(5), save(1)), I, O, T)]) :-
+    fail.
+
+dilemma_star_2(X_2, X_1, I, O, [(dilemma(save(1),save(5)), I, O, T)]) :-
+    dilemma(save(1), save(5), I, O, T),
+    [(X_2, X_1)] \= [(save(1), save(5))].
+dilemma_star_2(save(1), save(5), I, O, [(not_dilemma(save(1), save(5)), I, O, T)]) :-
+    fail.
+
+%%% not_follow_utilitarian
+
+not_follow_utilitarian(E_0, E_1, T) :-
+    follow_utilitarian_star_1(E_0, E_1, D_1),
+    joiningLists([D_1], D),
+    latest(D, T).
+
+follow_utilitarian_star_1(I, O, [(not_rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)]), I, O, T)]) :-
+    not_rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)], I, O, T),
+    T > 0.
+follow_utilitarian_star_1(I, O, D) :-
+    D = [(rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)]), I, E_0, T_rule_r), (not_dilemma(save(_h2049),save(_h2051)), E_0, O, T_not_dilemma)],
+    rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)], I, E_0, T_rule_r),
+    not_dilemma(save(_h2049), save(_h2051), E_0, O, T_not_dilemma).
+follow_utilitarian_star_1(I, O, D) :-
+    D = [(rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)]), I, E_0, T_rule_r), (dilemma(save(_h2049),save(_h2051)), E_0, E_1, T_dilemma), (not_save(_h2049), E_1, O, T_not_save)],
+    rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)], I, E_0, T_rule_r),
+    dilemma(save(_h2049), save(_h2051), E_0, E_1, T_dilemma),
+    not_save(_h2049, E_1, O, T_not_save).
+follow_utilitarian_star_1(I, O, D) :-
+    D = [(rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)]), I, E_0, T_rule_r), (save(_h2049), E_0, E_1, T_save), (dilemma(save(_h2049),save(_h2051)), E_1, E_2, T_dilemma), (save(_h2051), E_2, O, T_save)],
+    rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)], I, E_0, T_rule_r),
+    save(_h2049, E_0, E_1, T_save),
+    dilemma(save(_h2049), save(_h2051), E_1, E_2, T_dilemma),
+    save(_h2051, E_2, O, T_save).
+follow_utilitarian_star_1(I, O, D) :-
+    D = [(rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)]), I, E_0, T_rule_r), (not_save(_h2051), E_0, E_1, T_not_save), (save(_h2049), E_1, E_2, T_save), (dilemma(save(_h2049),save(_h2051)), E_2, E_3, T_dilemma), (not_prolog(_h2049 > _h2051), E_3, O, T_not_prolog)],
+    rule_r(follow_utilitarian, [dilemma(save(_h2049),save(_h2051)),save(_h2049),not save(_h2051),prolog(_h2049 > _h2051)], I, E_0, T_rule_r),
+    not_save(_h2051, E_0, E_1, T_not_save),
+    save(_h2049, E_1, E_2, T_save),
+    dilemma(save(_h2049), save(_h2051), E_2, E_3, T_dilemma),
+    not_prolog(_h2049 > _h2051, E_3, O, T_not_prolog).
+
+%%% not_prolog
+
+prolog(X, I, I, 0) :- X.
+not_prolog(X, I, I, 1) :- \+ X.
+
+%%% not_false
+
+false(I, I, 0).
+not_false(I, I, 1).
+
+%%% not_make
+
+make(X_1, I, I, 0).
+not_make(X_1, I, I, 1).
+
+%%% not_make_not
+
+make_not(X_1, I, I, 0).
+not_make_not(X_1, I, I, 1).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation : O
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+pull_switch(I, O, T) :- insert_abducible(pull_switch, I, O, T).
+not_pull_switch(I, O, T) :- insert_abducible(not pull_switch, I, O, T).
+

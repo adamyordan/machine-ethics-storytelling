@@ -1,0 +1,9 @@
+server {
+    listen 80;
+    server_name krr.cs.ui.ac.id;
+
+    location /machine-ethics/counterfactual {
+        proxy_pass http://0.0.0.0:4567/;
+        proxy_ignore_client_abort on;
+    }
+}

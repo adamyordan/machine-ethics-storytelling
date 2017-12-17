@@ -1,0 +1,45 @@
+:- import append/3 from basics.
+:- import member/2 from basics.
+
+:- export tupleToList/2, addToSet/3, extend/3, compls/2, atom/2, without_last/2, predArityToArgs/3.
+
+tupleToList((T, Ts), [T | Tl]) :- tupleToList(Ts, Tl).
+tupleToList(T, [T]).
+
+addToSet(Elem, I, I) :- member(Elem, I), !.
+addToSet(Elem, I, [Elem | I]) :- !.
+
+extend(F, Ls, F2) :-
+	F =.. Fs,
+	append(Fs, Ls, L2),
+	F2 =.. L2.
+
+compls([not X|Xs], Result) :-
+    !,
+    compls(Xs, NotXs),
+    append([X], NotXs, Result).
+
+compls([X|Xs], Result) :-
+    !,
+    compls(Xs, NotXs),
+    append([not X], NotXs, Result).
+
+compls([], []).
+
+atom(not X, X).
+atom(X, X).
+
+without_last([_], []).
+without_last([X|Xs], [X|WithoutLast]) :- 
+    without_last(Xs, WithoutLast).
+
+generateVarList(0, []).    
+generateVarList(Size, Ls) :-
+    SizeMinOne is Size - 1,
+    generateVarList(SizeMinOne, L),
+    append(L, [_], Ls).
+
+predArityToArgs(Pred, Arity, PredWithArgs) :-
+    generateVarList(Arity, Varlist),
+    append([Pred], Varlist, PredArgsList),
+    PredWithArgs =.. PredArgsList.

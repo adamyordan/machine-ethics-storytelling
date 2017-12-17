@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="styles/style.css">
+  <title>Counterfactuals in Machine Ethics</title>
+</head>
+<body>
+  <div id="particles-js"></div>
+  <div class="screen" id="screen">
+    <div id="loadingscreen">
+      <div class="jumbo-text-container container">
+        <p class="jumbo-text-title">Machine Ethics</p>
+        <p class="jumbo-text-subtitle">Loading...</p>
+      </div>
+    </div>
+    <div id="titlescreen">
+      <div class="jumbo-text-container container">
+        <p class="jumbo-text-title">Machine Ethics</p>
+        <p class="jumbo-text-subtitle">A Logic Programming Approach for Counterfactual Reasoning in Moral Dilemmas</p>
+        <br>
+        <div class="narration-action">
+          <button class="btn btn-default btn-action" id="title-action-start">START</button>
+          <!-- <br><br><br><br><br>
+          <hr>
+          <h4>Other cases</h4>
+          <button class="btn btn-default btn-action" id="title-action-start-bombing">Terror Bombing</button> -->
+        </div>
+      </div>
+    </div>
+    <div id="infoscreen">
+      <div class="info-content-container">
+        <div class="info-content" id="info-content">
+          This is info.
+        </div>
+        <div class="action-container" id="info-action-container">
+            <button class="btn btn-default btn-action">Action1</button>
+            <button class="btn btn-default btn-action">Action2</button>
+          </div>
+        </div>
+    </div>
+    <div id="theaterscreen">
+      <div class="theater-top-section">
+        <div class="narration-container container">
+          <span class="narration" id="theater-narration">
+            This is a narration.
+          </span>
+        </div>      
+      </div>
+      <div class="theater-middle-section">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="illustration-container">
+              <img src="" alt="illustration" class="illustration" id="theater-illustration">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="bubble-container speech-bubble" id="theater-bubble">
+              <div class="speech-bubble-content">
+                <span class="bubble" id="theater-bubble-content"></span>
+              </div>
+            </div>      
+            <div class="side-illustration-container">
+              <img src="" alt="illustration" class="bubble-illustration" id="theater-bubble-illustration">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="theater-bottom-section">
+        <div class="action-container" id="theater-action-container">
+          <button class="btn btn-default btn-action">Action1</button>
+          <button class="btn btn-default btn-action">Action2</button>
+        </div>
+      </div>
+      <div class="idea-container">
+        <span id="idea-text"></span>
+        <button class="btn btn-idea" id="idea-btn">?</button>
+        <div class="idea-notif" id="idea-notif"></div>
+      </div>
+    </div>
+    <div id="fullscreen">
+
+    </div>
+  </div>
+
+  <div class="btn-menu-container">
+    <button class="btn btn-menu" id="menu-home">Home</button>
+    <button class="btn btn-menu" id="menu-help">Help</button>
+    <button class="btn btn-menu" id="menu-sound">Sound: ON</button>
+    <div class="input-group">
+      <span class="input-group-addon">Jump to</span>
+      <select class="form-control" id="menu-nav"></select>
+    </div>
+  </div>
+
+  <div id="modal">
+    <div class="modal-dialog" id="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-title">Idea dialog</h5>
+          <button type="button" class="close" id="modal-close-icon">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="modal-content">
+          <p>Expect some useful information here.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="modal-close-btn">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-help">
+    <div class="modal-help-container">
+      <img src="" alt="" id="img-help">
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.5/howler.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="js/storyteller.js"></script>
+  <script src="js/eventFunctions.js"></script>
+  <script>
+    particlesJS.load('particles-js', 'assets/particles.json', function() {
+      console.log('callback - particles.js config loaded');
+    });
+  </script>
+</body>
+</html>

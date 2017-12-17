@@ -1,0 +1,14 @@
+abds([push_man/0]).
+intvs([man_hit/0]).
+
+can_save(five).
+can_save(one).
+more(five, one).
+
+save(five) <- trolley_stopped.
+save(one) <- not man_hit.
+
+trolley_stopped <- man_hit.
+man_hit <- push_man.
+
+follow_utilitarian <- can_save(X), can_save(Y), save(X), not save(Y), more(X, Y).

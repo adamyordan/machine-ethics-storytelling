@@ -1,0 +1,137 @@
+:- import length/2, append/3 from basics.
+:- import tupleToList/2, predArityToArgs/3 from helper.
+:- import incr_assert/1 from increval.
+
+:- dynamic timeOfInterest/2 as incremental.
+:- dynamic predicateDatabase/1.
+:- dynamic predicateInHeadDatabase/1.
+:- dynamic ruleDatabase/2.
+:- dynamic isAbducible/2.
+:- dynamic isIntervention/1.
+:- dynamic compl/2.
+:- dynamic pending/2.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Marking : Predicates - Time of Interest
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+markTimeOfInterest(Pred, T) :-
+    timeOfInterest(Pred, T), !.
+markTimeOfInterest(Pred, T) :-
+    incr_assert(timeOfInterest(Pred, T)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Marking : Rules - Predicates (and head of rule)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+markRule(H, B) :-
+    H =.. [H_Pred | H_Args],
+    length(H_Args, Arity),
+    isIntervention(H_Pred / Arity),
+    !,
+    append(B, [not make_not(H)], B2),
+    markRuleHelper(H, B2).
+
+markRule(H, B) :-
+    markRuleHelper(H, B).
+
+markRuleHelper(H, B) :-
+    markHeadRule(H),
+    markPredicates(B),
+    assert(ruleDatabase(H, B)).
+
+markHeadRule(H) :-
+    H =.. [Pred | Terms],
+    length(Terms, Arity),
+    \+ predicateInHeadDatabase(Pred/Arity),
+    \+ isAbducible(Pred/Arity, _),
+    assert(predicateInHeadDatabase(Pred/Arity)),
+    markPredicate(H).
+markHeadRule(H) :-
+    H =.. [Pred | Terms],
+    length(Terms, Arity),
+    \+ predicateInHeadDatabase(Pred/Arity),
+    isAbducible(Pred/Arity, _),
+    retractall(isAbducible(Pred/Arity, _)),
+    assert(predicateInHeadDatabase(Pred/Arity)),
+    markPredicate(H).
+markHeadRule(_).
+
+markPredicates([]).
+markPredicates([T | Ts]) :-
+    markPredicate(T),
+    markPredicates(Ts).
+
+markPredicate(not T) :-
+    !, markPredicate(T).
+markPredicate(T) :-
+    T =.. [Pred | Terms],
+    length(Terms, Arity),
+    \+ predicateDatabase(Pred/Arity),
+    \+ isAbducible(Pred/Arity, _),
+    assert(predicateDatabase(Pred/Arity)),
+    markTimeOfInterest(Pred, 0),
+    markTimeOfInterest(Pred, 1).
+markPredicate(_).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Marking : Complements
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+markCompl(F, NotF) :-
+    assert(compl(F, NotF)),
+    assert(compl(NotF, F)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Marking : Abducibles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+markAbducibles([]).
+markAbducibles([Abd | Abds]) :-
+    markAbducible(Abd),
+    markAbducibles(Abds).
+
+markAbducible(Abd) :-
+    \+ isAbducible(Abd, _),
+    assert(isAbducible(Abd, 0)).
+markAbducible(_).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Unmarking : Abducibles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+unmarkAbducible(Abd, T) :-
+    isAbducible(Abd, 0),
+    retractall(isAbducible(Abd, _)),
+    assert(isAbducible(Abd, T)).
+
+unmarkAbducible(Abd, T) :-
+    isAbducible(Abd, LastT),
+    retractall(isAbducible(Abd, _)),
+    MinT is min(T, LastT),
+    assert(isAbducible(Abd, MinT)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Marking : Interventions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+markInterventions([]).
+markInterventions([Intv | Intvs]) :-
+    markIntervention(Intv),
+    markInterventions(Intvs).
+
+markIntervention(Intv / Arity) :-
+    \+ isIntervention(Intv / Arity),
+    \+ isAbducible(Intv / Arity, _),
+    markInterventionHelper(Intv / Arity).
+markIntervention(Intv / Arity) :-
+    \+ isIntervention(Intv / Arity),
+    isAbducible(Intv / Arity, _),
+    markInterventionHelper(Intv / Arity),
+    markAbducible(Intv / Arity).
+markIntervention(_).
+
+markInterventionHelper(Intv / Arity) :-
+    predArityToArgs(Intv, Arity, IntvWithArgs),
+    assert(isIntervention(Intv / Arity)),
+    markRuleHelper(IntvWithArgs, [make(IntvWithArgs)]).

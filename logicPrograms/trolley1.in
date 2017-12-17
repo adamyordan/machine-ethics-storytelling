@@ -1,0 +1,17 @@
+abds([pull_switch/0]).
+intvs([hit/1]).
+
+trolley_arriving.
+trolley_to(main) <- trolley_arriving, not pull_switch.
+trolley_to(side) <- trolley_arriving, pull_switch.
+
+on(main, 5).
+on(side, 1).
+
+hit(X) <- on(Y, X), trolley_to(Y).
+save(X) <- not hit(X).
+
+dilemma(save(5), save(1)).
+dilemma(save(1), save(5)).
+
+follow_utilitarian <- dilemma(save(X), save(Y)), save(X), not save(Y), prolog(X > Y).

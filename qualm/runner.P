@@ -1,0 +1,133 @@
+:- import member/2, append/3 from basics.
+:- import incr_assert/1, incr_assert_inval/1, incr_table_update/0 from increval.
+:- import addToSet/3, extend/3 from helper.
+:- dynamic actab/2 as incremental.
+:- dynamic queryTime/1 as incremental.
+:- consult(database).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helpers for Runner
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+holds(F, I, O, T_F, Qt) :-
+    incr_assert(queryTime(Qt)),
+    % writeln(queryTime(Qt)),
+    activate_pending(Qt),
+    compl(F, NotF),
+    !,
+    most_recent(F, I, O, T_F, Qt),
+    most_recent(NotF, I, O, T_NotF, Qt),
+    !,
+    T_F \= 0,
+    T_F >= T_NotF.
+
+activate_pending(Qt) :-
+    pending(F, T),
+    Qt >= T,
+    extend(F, [I, I, T], F2), %HERE
+    % write(F2), nl,
+    incr_assert(F2),
+    retractall(pending(F, T)),
+    fail.
+activate_pending(_).
+
+most_recent(F, I, O, T, Qt) :-
+    findall([O_F, T_F], call(F, I, O_F, T_F), Ts),
+    findGreatestLessThan(Ts, T, Qt),
+    T \= 0,
+    member([O, T], Ts).
+most_recent(_, _, _, 0, _).
+
+findGreatestLessThan([], 0, _) :- !.
+findGreatestLessThan([[_, T] | Ts], T, Qt) :-
+    findGreatestLessThan(Ts, T2, Qt),
+    T =< Qt,
+    T >= T2,
+    !.
+findGreatestLessThan([_ | Ts], T2, Qt) :-
+    findGreatestLessThan(Ts, T2, Qt).
+
+latest(Fs, T) :-
+    greatest(Fs, T),
+    not_supervened(Fs, T).
+
+greatest([], 0).
+greatest([(_, _, _, T1) | Fs], T) :-
+    \+ var(T1),
+    greatest(Fs, T2),
+    T_max is max(T1, T2),
+    T = T_max,
+    !.
+greatest([(_, _, _, T1) | Fs], T) :-
+    var(T1),
+    greatest(Fs, T2),
+    T1 = T2,
+    T = T2.
+
+not_supervened([], _) :- !.
+not_supervened([(F1, I1, O1, T1) | Fs], T) :-
+    compl(F1, NotF),
+    findall([O1, T_NotF], call(NotF, I1, O1, T_NotF), Ts),
+    findGreatestLessThan(Ts, T_NotF_Greatest, T),
+    T1 >= T_NotF_Greatest,
+    not_supervened(Fs, T).
+    
+active(Rule, T) :-
+    Rule =.. [_, Head, _],
+    Head =.. [Pred | _],
+    timeOfInterest(Pred, T),
+    compl(Rule, NotRule),
+    lastActiveLessThan(Rule, T_Rule, T),
+    lastActiveLessThan(NotRule, T_NotRule, T),
+    T_Rule > T_NotRule.
+
+lastActiveLessThan(Rule, T, Qt) :-
+    Rule =.. [P, Head, Body],
+    findall([Time, Time], call(P, Head, Body, _, _, Time), Ts),
+    findGreatestLessThan(Ts, T, Qt).
+
+produce_context(I, I, []).
+produce_context(O, I, [not Abd | Abds]) :-
+    !,
+    \+ member(Abd, I),
+    addToSet(not Abd, I, Otemp),
+    produce_context(O, Otemp, Abds).
+produce_context(O, I, [Abd | Abds]) :-
+    \+ member(not Abd, I),
+    addToSet(Abd, I, Otemp),
+    produce_context(O, Otemp, Abds).
+
+insert_abducible(not F, I, I, T_Abd) :-
+    F =.. [Abd | _],
+    isAbducible(Abd/_, T_Abd),
+    T_Abd \= 0,
+    queryTime(Qt),
+    Qt >= T_Abd,
+    !,
+    \+ actab(Abd/_, T_Abd).
+insert_abducible(not F, I, O, 0.1) :-
+    F =.. [Abd | _],
+    isAbducible(Abd/_, _),
+    !,
+    \+ member(F, I),
+    addToSet(not F, I, O).
+
+insert_abducible(F, I, I, T_Abd) :-
+    F =.. [Abd | _],
+    isAbducible(Abd/_, T_Abd),
+    T_Abd \= 0,
+    queryTime(Qt),
+    Qt >= T_Abd,
+    !,
+    actab(Abd/_, T_Abd).
+insert_abducible(F, I, O, 0.1) :-
+    F =.. [Abd | _],
+    isAbducible(Abd/_, _),
+    !,
+    \+ member(not F, I),
+    addToSet(F, I, O).
+
+joiningLists([], []).
+joiningLists([L | Ls], Combined) :-
+    joiningLists(Ls, Temp),
+    append(L, Temp, Combined), !.

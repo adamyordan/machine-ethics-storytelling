@@ -1,0 +1,6 @@
+abd(tacticalBombing/0).
+intv(killCivilian/0).
+
+endWar <- bombMilitary.
+bombMilitary <- tacticalBombing.
+killCivilian <- tacticalBombing.

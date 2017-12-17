@@ -1,0 +1,155 @@
+:- import append/3 from basics.
+:- import compls/2 from helper.
+
+:- op(1100, xfy, then).
+
+evalCounterfactual((Pre then Conc)) :-
+    is_list(Pre),
+    is_list(Conc),
+    !,
+    evalCounterfactual(Pre, Conc, []).
+
+evalCounterfactual((Pre then Conc)) :-
+    is_list(Pre),
+    \+is_list(Conc),
+    !,
+    evalCounterfactual(Pre, [Conc], []).
+
+evalCounterfactual((Pre then Conc)) :-
+    \+is_list(Pre),
+    is_list(Conc),
+    !,
+    evalCounterfactual([Pre], Conc, []).
+
+evalCounterfactual((Pre then Conc)) :-
+    evalCounterfactual([Pre], [Conc], []).
+
+evalCounterfactual((Pre then Conc)) :-
+    evalCounterfactual(Pre, Conc, []).
+
+evalCounterfactual(Pre, Conc, O_Oth) :-
+
+    currentTime(T),
+    HypoTime1 is T + 0.1,
+    HypoTime2 is T + 0.2,
+
+    % abduction
+    generateObservations(Pre, Conc, O_Oth, O),
+    findAbds(O, E),
+    updateAbds(E, HypoTime1),
+
+    % action
+    intervene(Pre, HypoTime1),
+    
+    % prediction
+    !,
+    evalCfHelper(Pre, Conc, HypoTime1, HypoTime2).
+
+evalCfHelper(Pre, Conc, HypoTime1, HypoTime2) :-
+    verify(Conc, HypoTime1),
+    !,
+
+    % undo action
+    undoIntervention(Pre, HypoTime2),
+    incrCurrentTime.
+
+evalCfHelper(Pre, Conc, HypoTime1, HypoTime2) :-
+    \+ verify(Conc, HypoTime1),
+    !,
+
+    % undo action
+    undoIntervention(Pre, HypoTime2),
+    incrCurrentTime,
+    fail.
+
+generateObservations(Pre, Conc, O_Oth, O) :-
+    cfLiterals(Pre, L_Pre),
+    cfLiterals(Conc, L_Conc),
+    compls(L_Pre, O_Pre),
+    compls(L_Conc, O_Conc),
+    append(O_Pre, O_Conc, O_Pre_Conc),
+    append(O_Pre_Conc, O_Oth, O).
+
+verify(Conc) :-
+    currentTime(T),
+    HypoTime is T + 0.1,
+    verify(Conc, HypoTime).
+
+verify(Conc, Time) :-
+    cfLiterals(Conc, Literals),
+    findAbds(Literals, [], [], Time).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Misc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+cfLiterals([hadNot(X)|Xs], Result) :-
+    !,
+    cfLiterals(Xs, Literals),
+    append([not X], Literals, Result).
+cfLiterals([had(X)|Xs], Result) :-
+    !,
+    cfLiterals(Xs, Literals),
+    append([X], Literals, Result).
+cfLiterals([wouldHaveNot(X)|Xs], Result) :-
+    !,
+    cfLiterals(Xs, Literals),
+    append([not X], Literals, Result).
+cfLiterals([wouldHave(X)|Xs], Result) :-
+    !,
+    cfLiterals(Xs, Literals),
+    append([X], Literals, Result).
+cfLiterals([], []).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Abduction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+updateAbds(Es) :-
+    currentTime(T),
+    updateAbds(Es, T).
+
+updateAbds([E|Es], T) :-
+    updateAbd(E, T),
+    updateAbds(Es, T).
+updateAbds([], _).
+
+updateAbd(not E, T) :-
+    deactivate(E, T).
+updateAbd(E, T) :-
+    activate(E, T).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Action
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+intervene(Hs) :-
+    currentTime(T),
+    HypoTime is T + 0.1,
+    intervene(Hs, HypoTime),
+    incrCurrentTime.
+
+intervene([hadNot(H)|Hs], Time) :-
+    activate(make_not(H), Time),
+    intervene(Hs, Time).
+intervene([had(H)|Hs], Time) :-
+    activate(make(H), Time),
+    intervene(Hs, Time).
+intervene([], Time).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Undo Action
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+undoIntervention(Hs) :-
+    currentTime(T),
+    HypoTime2 is T + 0.2,
+    undoIntervention(Hs, HypoTime2),
+    incrCurrentTime.
+
+undoIntervention([hadNot(H)|Hs], Time) :-
+    deactivate(make_not(H), Time).
+    undoIntervention(Hs, Time).
+undoIntervention([had(H)|Hs], Time) :-
+    deactivate(make(H), Time).
+    undoIntervention(Hs, Time).
+undoIntervention([], Time).
